@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1615" />
+    <meta name="description" content="Private passport-based voting proof of concept for Midnight" />
+    <title>Private Ballot — Midnight POC</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Private Ballot home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>PRIVATE BALLOT</span>
+      </a>
+      <div class="topbar-center">
+        <span class="network-dot"></span>
+        Simulation + real Preview audit
+      </div>
+      <button class="ghost-button" id="resetButton" type="button">Reset demo</button>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="eyebrow"><span>PROOF OF CONCEPT / 01</span><span>FICTIONAL DATA ONLY</span></div>
+        <div class="hero-grid">
+          <div>
+            <h1>Prove eligibility.<br /><em>Keep passport data off-chain.</em></h1>
+            <p class="hero-copy">Explore identity issuance in simulation, then inspect real proof-backed votes on Midnight Preview. Passport data stays off-chain; public vote choices and timing still limit privacy.</p>
+          </div>
+          <div class="hero-side">
+            <div class="election-label">SIMULATED ELECTION</div>
+            <div class="election-id">ELECTION-DEMO-2026-001</div>
+            <div class="status-line"><span id="heroElectionState" class="status-pill open">OPEN</span><span>Binary referendum · YES / NO</span></div>
+            <div class="demo-controls">
+              <button class="primary-button compact" id="guidedDemoButton" type="button"><span>▶</span> Run full animated demo</button>
+              <label class="pace-control" for="demoPace"><span>DEMO PACE</span><select id="demoPace"><option value="step" selected>Step by step · you decide</option><option value="3">Comfortable autoplay · ~2 min</option><option value="1">Quick replay · ~1 min</option></select></label>
+            </div>
+            <p class="learn-shortcuts"><a href="#previewBallot">Live Preview ballot ↓</a><a href="#nfcOverview">Passport NFC, explained ↓</a><a href="#chainOverview">How we move on-chain ↓</a><a href="#zkExplainer">What is a ZK proof? ↓</a><a href="#networkLab">Try a real test transaction ↓</a></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="boundary-map" aria-label="Privacy boundary overview">
+        <article>
+          <span class="map-number">01</span>
+          <div><strong>VOTER DEVICE</strong><small>Passport + private secret + choice</small></div>
+        </article>
+        <span class="flow-arrow">→</span>
+        <article>
+          <span class="map-number">02</span>
+          <div><strong>AUTHORITY</strong><small>Eligibility + one-time issuance</small></div>
+        </article>
+        <span class="flow-arrow">→</span>
+        <article>
+          <span class="map-number">03</span>
+          <div><strong>MIDNIGHT</strong><small>Root + nullifiers + tally</small></div>
+        </article>
+      </section>
+
+      <section class="learn-section preview-ballot" id="previewBallot" aria-labelledby="previewTitle">
+        <span class="panel-kicker">REAL MIDNIGHT PREVIEW · SEPARATE FROM THE SIMULATOR</span>
+        <h2 id="previewTitle">Check the chain. Take one step at a time.</h2>
+        <p class="learn-lead">Read the deployed contract and verify each receipt against Preview. A closed election is inspect-only. For unfinished elections, explicitly enabled live controls use the existing local SDK wallets, real proofs and generated DUST.</p>
+        <div class="preview-buttons"><button id="previewInspect" class="primary-button" type="button">Check Preview state &amp; receipts</button><button id="previewJobCheck" class="ghost-button" type="button">Check running operation</button></div>
+        <p id="previewStatus" class="preview-status" role="status" aria-live="polite">Not checked yet. Opening this page does not restore a wallet, generate a proof or submit a transaction.</p>
+        <div id="previewState" class="preview-state" hidden><p>Live election <code id="previewElection">—</code> · separate from the simulator above</p><dl><div><dt>Network</dt><dd>Midnight Preview</dd></div><div><dt>Election phase</dt><dd id="previewPhase">—</dd></div><div><dt>Current tally</dt><dd id="previewTally">—</dd></div><div><dt>Eligible / used</dt><dd id="previewCounts">—</dd></div></dl><p>Contract <code id="previewContract">—</code></p><p>Checked <time id="previewChecked">—</time> · local verifier keys match the deployed contract</p></div>
+        <div id="previewReceiptGuide" class="preview-receipt" hidden>
+          <span class="panel-kicker">VERIFIED HISTORY · NO TRANSACTION IS RESUBMITTED</span>
+          <h3 id="previewReceiptTitle">Receipt</h3><p id="previewReceiptHelp"></p>
+          <pre><code id="previewReceiptJson"></code></pre>
+          <div class="preview-buttons"><button id="previewPrevious" class="ghost-button" type="button">← Previous receipt</button><button id="previewNext" class="ghost-button" type="button">Next receipt →</button></div>
+        </div>
+        <details id="previewActionPanel"><summary>Live step controls · can spend test DUST</summary>
+          <p>These controls run trusted authority and voter processes on this computer. Secrets stay in private local stores and are supplied to the trusted loopback prover, never in browser action requests or public chain fields. This is not hardware NFC, a browser wallet signer, or production isolation.</p>
+          <p id="previewActionHint">Check the deployed state first. Reset demo above only resets the simulator.</p>
+          <label class="preview-action-label" for="previewAction">Next live action<select id="previewAction" disabled><option>No verified actions available</option></select></label>
+          <label class="lab-opt-in"><input id="previewConsent" type="checkbox" disabled><span>I authorize this selected Preview test action using the local development wallets and generated DUST. It may submit a real transaction; no mainnet funds are used.</span></label>
+          <div class="preview-buttons"><button id="previewRun" class="primary-button" type="button" disabled>Run selected live step</button><button id="previewDisconnect" class="ghost-button" type="button" disabled>Stop idle wallet workers</button></div>
+        </details>
+        <div id="previewProgressPanel" hidden><h3>Actual operation progress</h3><p>No estimated percentage: syncing, proving and finality can take minutes. Leaving the page does not cancel a submitted transaction.</p><ol id="previewProgress" class="preview-progress" aria-label="Live operation events"></ol></div>
+        <details><summary>What the public evidence does—and does not—prove</summary><p>Receipt checks confirm successful inclusion, transaction hash and block. Current state is decoded from the deployed contract and its verifier keys are compared with the local compiled artifacts. The separate runner recorded a node rejection of a modified proof; ordinary local ledger WASM checks alone do not verify proof cryptography. Public vote choices, counters, wallet addresses and timing still permit correlation. This is not an end-to-end anonymity guarantee.</p></details>
+      </section>
+
+      <section class="transaction-theater" id="transactionTheater" aria-label="Animated private voting transaction">
+        <div class="theater-heading">
+          <div>
+            <span class="panel-kicker">SIMULATED PROTOCOL VIEW · NOT NETWORK TIMING</span>
+            <h2>Watch the privacy boundary work</h2>
+          </div>
+          <div class="theater-status"><i></i><span id="flowStatus">READY FOR PASSPORT</span></div>
+        </div>
+        <div class="demo-player" id="demoPlayer">
+          <div role="status" aria-live="polite"><strong id="demoStepTitle">A complete ballot, at your pace</strong><p id="demoStepDetail">Run the demo to walk through a fictional NFC read, eligibility, issuance, voting and attack checks. Each step waits for you by default. Starting a run resets only the local simulation.</p></div>
+          <div class="player-buttons"><button id="demoNext" class="primary-button" type="button" disabled>Next step →</button><button id="demoPause" class="ghost-button" type="button" disabled>Pause after step</button><button id="demoStop" class="ghost-button" type="button" disabled>Stop after step</button></div>
+          <ol id="demoResults" class="demo-results" aria-label="Verified demo outcomes"></ol>
+        </div>
+        <section class="nfc-scene" id="nfcScene" data-phase="idle" aria-label="Simulated passport tap">
+          <div class="nfc-scene-heading"><span class="panel-kicker">ON YOUR DEVICE · ANIMATION ONLY</span><strong id="nfcSceneStatus" role="status">Passport → read → prepare credential</strong></div>
+          <div class="nfc-tap-lane" id="nfcTapLane">
+            <div class="nfc-passport" id="nfcPassport"><span aria-hidden="true">▣</span><small>DEMO PASSPORT</small><strong id="nfcPassportLabel">Select a passport</strong></div>
+            <span class="nfc-tap-arrow" aria-hidden="true">→</span>
+            <div class="nfc-reader" id="nfcReader"><div class="node-icon phone-icon" aria-hidden="true"><i></i><span></span></div><strong>Voter device</strong><span id="nfcReaderStatus">Ready to read</span></div>
+          </div>
+          <div class="nfc-credential" id="nfcCredential"><span aria-hidden="true">◇</span><div><strong id="nfcCredentialTitle">No credential prepared</strong><p id="nfcCredentialDetail">The device creates a private secret. The authority decides whether it becomes a voting right.</p></div></div>
+          <div class="payload-follow"><p id="payloadBoundaryStatus" role="status">Select a passport to begin. Nothing sent yet.</p><button class="ghost-button" id="viewPayloads" type="button" aria-controls="payloadInspector">View payloads ↓</button></div>
+          <nav class="payload-boundaries" aria-label="Inspect data boundaries">
+            <button type="button" data-payload-target="local"><strong>1 · Local read</strong><span>Document ID → device</span><small>No HTTP request</small></button>
+            <button type="button" data-payload-target="authority"><strong>2 · Issue once</strong><span>ID + commitment → authority</span><small>Local HTTP · identity boundary</small></button>
+            <button type="button" data-payload-target="vote"><strong>3 · Submit ballot</strong><span>Proof simulation → verifier</span><small>Local HTTP · not real ZK</small></button>
+            <button type="button" data-payload-target="public"><strong>4 · Public state</strong><span>Root + nullifiers + tally</span><small>Simulation · not on-chain</small></button>
+          </nav>
+        </section>
+        <details class="payload-inspector" id="payloadInspector">
+          <summary>Developer view · what gets sent, and in what shape?</summary>
+          <p class="payload-intro">Live values from this fictional run. Secrets are hidden here, not removed from the simulator’s actual vote request. Expand a boundary below to compare request and response JSON.</p>
+          <details open data-payload-panel="local"><summary>1. Passport → device · local only</summary><p>No HTTP request. This is the last simulated read snapshot, not raw NFC data or a real passport format. Its status is UNKNOWN before the authority check; later authorization appears in the authority response below.</p><details id="localPayloadShape"><summary>Local adapter shape · not an NFC standard</summary><pre><code>type SimulatedRead = {
+  mode: "SIMULATED_NFC";
+  demoPassport: string;
+  documentStatus: "UNKNOWN"; // only the authority can resolve current status
+  accessedGroups: ["DG1", "SOD"]; // illustrated, not actually read
+  facialImageRead: false;
+  credential?: {
+    secret: "&lt;private; never displayed&gt;"; // inspector placeholder, NOT the secret
+    commitment: string; // 64 hex characters in the local simulator
+    authorization: "NOT_ISSUED" | "ALREADY_ISSUED_ON_THIS_DEVICE";
+  };
+};</code></pre><p>Approach → read → prepare takes about 5.4 seconds. It sends zero HTTP requests and grants zero voting rights. The next action, <strong>Verify &amp; issue credential</strong>, contacts the authority. Local history is not a fresh authority status check.</p></details><pre><code id="localPayload">No local read yet.</code></pre></details>
+          <details open data-payload-panel="authority"><summary>2. Device → authority · actual local HTTP</summary><p>Election ID is in the URL. The JSON body contains only <code>demoPassport</code> and <code>commitment</code>. It contains no secret, vote, photograph or document dump. The response authorizes the device’s existing secret; it does not deliver a new secret.</p><details><summary>Field types and response shape</summary><pre><code>// POST /api/elections/{electionId}/credential
+type CredentialRequest = {
+  demoPassport: string; // fictional document ID
+  commitment: string;   // 64 hex characters; hash of election + random secret
+};
+
+// HTTP 201
+type IssuedResponse = {
+  code: "ISSUED";
+  electionId: string;
+  eligibilityRoot: string; // 64 hex characters in this simulator
+  eligibleCredentialCount: number;
+};
+
+// Rejections return { code: string }, e.g.:
+// 409 ALREADY_ISSUED / ELECTION_CLOSED
+// 403 REVOKED / NOT_ELIGIBLE
+// 400 or 409 INVALID_COMMITMENT</code></pre></details><div class="payload-meta" id="authorityPayloadMeta">No credential request sent.</div><div class="payload-columns"><div><h3>Request body</h3><pre><code id="authorityRequest">No request yet.</code></pre></div><div><h3>Response body</h3><pre><code id="authorityResponse">No response yet.</code></pre></div></div></details>
+          <details data-payload-panel="vote"><summary>3. Voter → voting verifier · simulator vs Midnight</summary><p><strong>Simulator caveat:</strong> the current local HTTP vote request includes <code>credentialSecret</code>. Its value is redacted below. That field must disappear when real local ZK proving replaces the simulator.</p><div class="payload-meta" id="votePayloadMeta">No vote request sent.</div><div class="payload-columns"><div><h3>Current request body · secret redacted</h3><pre><code id="voteRequest">No request yet.</code></pre></div><div><h3>Current response body</h3><pre><code id="voteResponse">No response yet.</code></pre></div></div><h3>Planned public proof inputs · conceptual, not SDK wire format</h3><pre><code>{
+  "electionId": "ELECTION-DEMO-2026-001",
+  "eligibilityRoot": "&lt;public root&gt;",
+  "nullifier": "&lt;election-specific one-time value&gt;",
+  "choice": "YES | NO",
+  "proof": "&lt;proof bound to the contract and public inputs&gt;"
+}</code></pre><p>The secret and Merkle path are private prover inputs, not public transaction fields. Actual transaction encoding comes from the compiled Compact contract and Midnight SDK. No passport identifier belongs here.</p></details>
+          <details data-payload-panel="public"><summary>4. Eligibility set and tally · simulated public state</summary><p>This JSON is the actual <code>public</code> field of <code>GET /api/state</code>. This browser simulation changes it in-process; these values are not live Preview state. The separate Preview command-line runner submits real contract transactions.</p><pre><code id="publicPayload">Waiting for election state.</code></pre></details>
+          <details id="compactPayloadShape"><summary>Developer bridge · actual Compact call shapes on Preview</summary><p>These signatures match <code>compact/Voting.compact</code>. They are typed circuit calls, not a JSON REST API. The SDK builds, proves, balances with DUST and serializes each transaction. The browser simulator above is not connected to this runner.</p><pre><code>// OFF-CHAIN authority input: document ID + anonymous commitment.
+// Reserve one issuance per election + passport BEFORE enrolling.
+// Only the commitment crosses into the enrollment circuit:
+enroll(credentialCommitment: Bytes&lt;32&gt;): []
+// Private witness: authoritySecret. Public: commitment + updated tree/root.
+
+openVoting(): []
+// Private witness: authoritySecret. Public: phase becomes VOTING; root frozen.
+
+vote(yes: Boolean): Bytes&lt;32&gt;
+// Private witnesses: credentialSecret + membershipPath.
+// Public: yes, checked root, returned nullifier + tally change.
+// Election ID, instance and contract address bind the nullifier's scope.
+
+closeElection(): []
+// Private witness: authoritySecret. Public: phase becomes CLOSED.</code></pre><p><strong>No passport field exists in these circuits.</strong> The secret and Merkle path are available to the trusted local prover, not included as public transaction fields. An enrollment receipt means the commitment was accepted; it does not deliver a secret or mint a transferable NIGHT token. Commitment hashes differ between the simulator and Compact—do not reuse simulator credentials on Preview.</p></details>
+        </details>
+        <div class="flow-progress" aria-label="Transaction progress">
+          <div class="flow-step active" data-flow-step="1"><span>1</span><strong>Select</strong><small>Passport</small></div>
+          <i></i>
+          <div class="flow-step" data-flow-step="2"><span>2</span><strong>Verify</strong><small>Authority API</small></div>
+          <i></i>
+          <div class="flow-step" data-flow-step="3"><span>3</span><strong>Issue</strong><small>Commitment</small></div>
+          <i></i>
+          <div class="flow-step" data-flow-step="4"><span>4</span><strong>Vote</strong><small>Private proof</small></div>
+          <i></i>
+          <div class="flow-step" data-flow-step="5"><span>5</span><strong>Count</strong><small>Public tally</small></div>
+        </div>
+        <div class="network-stage" id="networkStage">
+          <div class="route route-one"><span>LOCAL DEMO API</span></div>
+          <div class="route route-two"><span>ANONYMOUS TRANSACTION</span></div>
+          <div class="privacy-gate"><i>×</i><span>Passport data<br />stops here</span></div>
+
+          <article class="protocol-node device-node" id="deviceNode">
+            <div class="node-icon phone-icon"><i></i><span></span></div>
+            <div class="node-copy"><small>01 / VOTER</small><strong>Voter device</strong><span id="deviceNodeState">Waiting for passport</span></div>
+            <div class="node-pulse"></div>
+          </article>
+
+          <article class="protocol-node authority-node" id="authorityNode">
+            <div class="node-icon authority-icon"><i></i><i></i><i></i></div>
+            <div class="node-copy"><small>02 / IDENTITY</small><strong>Passport authority</strong><span id="authorityNodeState">Ready to verify</span></div>
+            <div class="node-pulse"></div>
+          </article>
+
+          <article class="protocol-node midnight-node" id="midnightNode">
+            <div class="node-icon chain-icon"><i></i><i></i><i></i></div>
+            <div class="node-copy"><small>03 / PUBLIC STATE</small><strong>Midnight</strong><span id="midnightNodeState">Listening for proof</span></div>
+            <div class="node-pulse"></div>
+          </article>
+
+          <div class="packet-layer" id="packetLayer" aria-hidden="true"></div>
+        </div>
+        <div class="protocol-ticker">
+          <div class="ticker-title"><span>TRANSACTION TRACE</span><button type="button" id="clearTrace">CLEAR</button></div>
+          <div class="trace-list" id="traceList">
+            <div class="trace-empty">Choose a demo passport or run the guided demo.</div>
+          </div>
+        </div>
+        <div class="theater-legend">
+          <span><i class="legend-private"></i> Private / off-chain</span>
+          <span><i class="legend-public"></i> Public / on-chain</span>
+          <strong>Passport fields never enter Midnight</strong>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="panel voter-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-kicker">VOTER APP</span>
+              <h2>Your private voting pass</h2>
+            </div>
+            <div class="device-badge">THIS DEVICE</div>
+          </div>
+
+          <div class="stepper" aria-label="Voting progress">
+            <div class="step active" data-step="1"><span>1</span><small>Verify</small></div>
+            <i></i>
+            <div class="step" data-step="2"><span>2</span><small>Credential</small></div>
+            <i></i>
+            <div class="step" data-step="3"><span>3</span><small>Vote</small></div>
+            <i></i>
+            <div class="step" data-step="4"><span>4</span><small>Confirmed</small></div>
+          </div>
+
+          <div class="voter-view" id="voterView">
+            <div class="section-label-row">
+              <label>CHOOSE A DEMO PASSPORT</label>
+              <span>No real identity data</span>
+            </div>
+            <div class="passport-list" id="passportList">
+              <button class="passport-card" data-passport="DEMO-P001" type="button">
+                <span class="passport-icon">P</span>
+                <span><strong>DEMO-P001</strong><small>Demo citizen 01</small></span>
+                <i class="selection-mark"></i>
+              </button>
+              <button class="passport-card" data-passport="DEMO-P002" type="button">
+                <span class="passport-icon">P</span>
+                <span><strong>DEMO-P002</strong><small>Demo citizen 02</small></span>
+                <i class="selection-mark"></i>
+              </button>
+              <button class="passport-card" data-passport="DEMO-P003" type="button">
+                <span class="passport-icon">P</span>
+                <span><strong>DEMO-P003</strong><small>Revoked document</small></span>
+                <i class="selection-mark"></i>
+              </button>
+            </div>
+
+            <div class="nfc-entry">
+              <button class="ghost-button" id="nfcReadButton" type="button" disabled>Simulate NFC read of selected passport</button>
+              <p id="nfcReadStatus" role="status">Optional learning step. Select a fictional passport first. No NFC hardware or real document is accessed.</p>
+            </div>
+
+            <div class="selection-confirmation hidden" id="selectionConfirmation">
+              <span class="next-badge">NEXT</span>
+              <div><strong><span id="selectedPassportValue">—</span> selected</strong><p id="nextInstruction">Ask the authority to verify this passport and issue one anonymous credential.</p></div>
+              <span class="selection-arrow">↓</span>
+            </div>
+
+            <div class="privacy-note">
+              <span class="lock-icon">⌁</span>
+              <div><strong>A 256-bit secret is created locally</strong><p>Issuance sends only its commitment. This simulator later sends the secret to the local vote server; real ZK must replace that step.</p></div>
+            </div>
+
+            <div class="action-row">
+              <button class="primary-button" id="issueButton" type="button" disabled>First, choose a demo passport <span>↑</span></button>
+              <button class="text-button" id="copyAttackButton" type="button">Simulate copied app</button>
+            </div>
+
+            <div class="credential-card hidden" id="credentialCard">
+              <div class="credential-top"><span class="success-seal">✓</span><div><small>ANONYMOUS CREDENTIAL</small><strong id="credentialStatus">Ready to vote</strong></div></div>
+              <dl>
+                <div><dt>Election</dt><dd>ELECTION-DEMO-2026-001</dd></div>
+                <div><dt>Commitment</dt><dd class="mono" id="commitmentValue">—</dd></div>
+                <div><dt>Stored</dt><dd>Locally on this device</dd></div>
+              </dl>
+            </div>
+
+            <div class="ballot hidden" id="ballot">
+              <div class="ballot-heading"><div><small>PRIVATE BALLOT</small><h3>Do you approve the demo proposal?</h3></div><span>CHOOSE ONE</span></div>
+              <div class="vote-options">
+                <button class="vote-option" data-choice="YES" type="button"><span class="vote-letter">Y</span><strong>YES</strong><i></i></button>
+                <button class="vote-option" data-choice="NO" type="button"><span class="vote-letter">N</span><strong>NO</strong><i></i></button>
+              </div>
+              <button class="primary-button vote-submit" id="voteButton" type="button" disabled>Generate proof & submit vote <span>→</span></button>
+              <button class="text-button centered" id="tamperButton" type="button">Submit a modified / fake proof</button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="panel authority-panel">
+          <div class="panel-heading">
+            <div><span class="panel-kicker">MOCK GOVERNMENT</span><h2>Passport Authority</h2></div>
+            <span class="status-pill secure">SECURE</span>
+          </div>
+          <p class="panel-intro">The issuance endpoint receives identity, not a ballot choice. In this demo, issuance and voting share a server; production must separate them.</p>
+          <div class="registry" id="registry"></div>
+          <div class="log-heading"><span>AUTHORITY LOG</span><span class="live-label"><i></i> LIVE</span></div>
+          <div class="authority-log" id="authorityLog">
+            <div class="empty-log">Credential checks will appear here.</div>
+          </div>
+            <div class="authority-footer"><span>Authority endpoint records</span><strong>Who received a credential?</strong><span class="cannot">Not in its issuance records</span><strong>The ballot choice. Shared-server and timing correlation remain risks.</strong></div>
+        </aside>
+      </section>
+
+      <section class="ledger-section">
+        <div class="ledger-heading">
+          <div><span class="panel-kicker light">SIMULATED PUBLIC STATE · NOT ON MIDNIGHT</span><h2>What an observer can verify</h2></div>
+          <div class="ledger-actions"><span class="block-height" id="blockHeight">BLOCK #0000</span><button class="outline-button" id="closeButton" type="button">Close election</button></div>
+        </div>
+        <div class="ledger-grid">
+          <div class="tally-card yes"><small>YES</small><strong id="yesCount">0</strong><span>verified votes</span></div>
+          <div class="tally-card no"><small>NO</small><strong id="noCount">0</strong><span>verified votes</span></div>
+          <div class="chain-state">
+            <div><span>Election state</span><strong id="electionState">OPEN</strong></div>
+            <div><span>Eligible credentials</span><strong id="eligibleCount">0</strong></div>
+            <div><span>Votes cast</span><strong id="votesCast">0</strong></div>
+          </div>
+          <div class="root-card"><div><span>ELIGIBILITY MERKLE ROOT</span><button class="copy-button" id="copyRoot" type="button">COPY</button></div><code id="rootValue">0x—</code></div>
+        </div>
+        <div class="ledger-bottom">
+          <div class="tx-console">
+            <div class="console-heading"><span>RECENT PUBLIC TRANSACTIONS</span><span>IDENTITIES REDACTED BY DESIGN</span></div>
+            <div id="transactionList" class="transaction-list"><div class="empty-transaction">No votes submitted yet.</div></div>
+          </div>
+          <div class="privacy-ledger">
+            <h3>Never written to the chain</h3>
+            <div class="privacy-tags"><span>Passport number</span><span>Name</span><span>Date of birth</span><span>Photograph</span><span>NFC contents</span><span>Credential secret</span></div>
+            <p>Passport information is processed for verification and is not retained as part of the voting record.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="learn-section" id="nfcOverview" aria-labelledby="nfcTitle">
+        <span class="panel-kicker">PASSPORT → ELIGIBILITY / NFC ENGINEERING</span>
+        <h2 id="nfcTitle">Read the chip. Then ask if the document is still valid.</h2>
+        <p class="learn-lead">NFC is the short-range radio link between a phone and a passport chip. The document number comes from the signed document data—not from the chip’s radio identifier. This web app animates fictional reads only; it does not read a real passport.</p>
+        <div class="learn-grid">
+          <article><span class="panel-kicker">01 / CONNECT LOCALLY</span><h3>Establish a secure session</h3><p>A native reader uses access information from the document, commonly its machine-readable zone (MRZ), to establish BAC or PACE as supported. Ask for consent, show where to hold the phone, and handle a moved or unsupported chip without issuing anything.</p></article>
+          <article><span class="panel-kicker">02 / AUTHENTICATE</span><h3>Read only what policy needs</h3><p>DG1 contains document and holder details. SOD contains signed data-group hashes. Validate the signature with trusted issuer certificates and compare the required hashes. DG2 is the facial image: skip it for this POC. Chip authentication is a separate anti-copy check where supported and required.</p></article>
+          <article><span class="panel-kicker">03 / CHECK THE AUTHORITY</span><h3>Authentic is not currently valid</h3><p>An authentic old passport can have been replaced or cancelled. <code>documentStatus</code> comes from an authoritative status service, not a live field on the chip. Our authority returns REVOKED for DEMO-P003 and refuses a credential even after a successful simulated chip read.</p></article>
+        </div>
+        <details><summary>What must we build for real NFC?</summary><p>A native mobile reader with ISO-DEP/APDU access, secure messaging, document parsing, certificate trust management and a status-service integration. Browser Web NFC only handles NDEF messages; it does not provide the low-level interface needed here. Merely detecting <code>NDEFReader</code> does not make a passport reader.</p><p>Keep raw document bytes inside the native verifier. Send only policy-required information to the authorized eligibility service, never to Midnight. Release document buffers promptly and exclude MRZ, photographs and NFC dumps from storage, analytics, crash logs and screenshots. Real-device testing is still required; Playwright cannot validate a chip.</p></details>
+        <p class="source-links">Engineering sources: <a href="https://www.icao.int/publications/doc-series/doc-9303" target="_blank" rel="noreferrer">ICAO Doc 9303 ↗</a> · <a href="https://developer.chrome.com/docs/capabilities/nfc" target="_blank" rel="noreferrer">Web NFC limits ↗</a> · <a href="https://developer.android.com/reference/android/nfc/tech/IsoDep" target="_blank" rel="noreferrer">Native ISO-DEP access ↗</a></p>
+      </section>
+
+      <section class="learn-section" id="chainOverview" aria-labelledby="chainTitle">
+        <span class="panel-kicker">SIMULATOR → MIDNIGHT PREVIEW / IMPLEMENTATION PLAN</span>
+        <h2 id="chainTitle">A real ballot needs a contract, not just a transaction.</h2>
+        <p class="learn-lead">The separate command-line runner has deployed the Compact contract, enrolled two credentials, finalized two real Preview votes and closed at YES 1 / NO 1 using DUST. The ballots above still run in a local simulator. A voting credential is a secret-backed entitlement, not a transferable NIGHT token.</p>
+        <ol class="engineering-steps">
+          <li><strong>Compile the actual voting rules · implemented.</strong><p>The deployed Compact contract enforces election scope, authority-only eligibility updates, a frozen eligibility root for voting, one-time nullifiers, YES/NO counts and authority-only close. A witness supplies the private secret and Merkle path. Eight compiled-circuit tests check the rules; network receipts provide separate evidence of accepted transactions.</p></li>
+          <li><strong>Make issuance durable and separate.</strong><p>Keep the identity registry off-chain. Atomically reserve one issuance per identity and election, publish its commitment through an authorized transaction, and mark it issued only after finality. Store a pending receipt so retries reuse the same commitment instead of issuing twice.</p></li>
+          <li><strong>Prove locally, then submit.</strong><p>Use compatible Compact, Midnight.js, wallet and prover versions. The device proves membership and the election-specific nullifier; only proof-bound public data reaches the network. Remove the simulator’s <code>credentialSecret</code> HTTP vote payload entirely. Never send witnesses to an untrusted prover.</p></li>
+          <li><strong>Confirm the exact transaction and state.</strong><p>Show build → prove → sign → submitted → finalized separately. Save the transaction identifier before broadcasting, reconcile uncertain submissions without blind retries, and read the deployed contract’s root, nullifiers and tally back from the indexer. Animation completion is not confirmation.</p></li>
+          <li><strong>Full Preview ballot · verified separately.</strong><p>The runner enrolled both valid credentials before opening, finalized YES and NO, and closed at 1–1. The authority refused duplicate and revoked-document requests. Preview rejected a modified-proof transaction; duplicate and post-close votes were rejected during local circuit construction, without broadcast. The new live panel checks real receipts and offers guarded steps for unfinished elections. A fresh complete UI broadcast run is still unverified; animation and fixture tests are not network tests.</p></li>
+        </ol>
+        <details open><summary>Privacy checkpoint before deployment</summary><p>Never derive a public commitment from the passport number. Use a fresh random secret per election and bind it to the contract/election. Issuing and immediately voting as the only eligible voter defeats the anonymity set; real flows need an enrollment phase. A changing public tally exposes each vote choice, and wallet, IP and timing metadata can link it to a person. Stronger privacy needs a reviewed submission and tally design—not merely “ZK enabled.”</p></details>
+        <p class="source-links"><a href="https://docs.midnight.network/guides/deploy-and-operate" target="_blank" rel="noreferrer">Deploying and operating a contract ↗</a> · <a href="https://docs.midnight.network/relnotes/support-matrix" target="_blank" rel="noreferrer">Compatible toolchain versions ↗</a></p>
+      </section>
+
+      <section class="learn-section" id="zkExplainer" aria-labelledby="zkTitle">
+        <span class="panel-kicker">UNDER THE HOOD / ZERO-KNOWLEDGE</span>
+        <h2 id="zkTitle">Prove you may vote. Don’t reveal who you are.</h2>
+        <p class="learn-lead">A zero-knowledge (ZK) proof is cryptographic evidence that a statement is true, without revealing the private information used to prove it. Think “I have a valid voting credential,” without showing which credential is yours.</p>
+        <div class="zk-statement"><small>WHAT THE COMPACT VOTING PROOF ESTABLISHES</small><p>“I know the secret behind an eligible credential in this election’s Merkle tree, and this nullifier is correctly derived from that secret and this election.”</p></div>
+        <div class="learn-grid">
+          <article><span class="panel-kicker">01 / PROVE · PRIVATE</span><h3>The computational work</h3><p>A trusted local prover uses the secret and Merkle membership path (the private <em>witness</em>) to generate a proof. Circuit complexity, hardware and first-time key loading affect how long it takes. Never give a witness to an untrusted proof service.</p></article>
+          <article><span class="panel-kicker">02 / VERIFY · PUBLIC</span><h3>A much smaller check</h3><p>Midnight uses zk-SNARKs, designed for small proofs and efficient verification. The intended contract checks the proof, rejects a used nullifier, and updates the tally only while the election is open.</p></article>
+          <article><span class="panel-kicker">03 / CONFIRM · NETWORK</span><h3>Waiting is not all proving</h3><p>Wallet approval, proving, submission and block finality are separate waits. A slow transaction does not tell us which step is slow. We must measure real executions, not animation duration.</p></article>
+        </div>
+        <details open><summary>So, are ZK proofs slow in this demo?</summary><p>The browser animation does not run a real voting proof. Its animated proof and 1-second authority check are teaching delays, not benchmarks; the simulator sends the secret to its local server. The separate Preview runner uses the compiled Compact circuit and trusted loopback prover. Its build/prove, DUST balancing, submission and finality stages are real waits—not a fixed animation timer.</p></details>
+        <details><summary>What does ZK not prove or hide?</summary><p>The authority—not the proof—checks document status and issues one credential per demo passport. Passport chip data alone does not establish current revocation status. ZK does not prevent timing or wallet-address correlation. A live tally with one vote at a time can reveal each vote’s choice; batching or a private tally design and separate submission infrastructure need further work. This POC does not prove end-to-end election anonymity.</p></details>
+        <p class="source-links">Read more: <a href="https://docs.midnight.network/concepts/zero-knowledge-proofs" target="_blank" rel="noreferrer">Midnight: zero-knowledge proofs ↗</a> · <a href="https://docs.midnight.network/guides/local-proving" target="_blank" rel="noreferrer">Why proving runs locally ↗</a></p>
+      </section>
+
+      <section class="learn-section network-lab" id="networkLab" aria-labelledby="networkTitle">
+        <span class="panel-kicker">OPTIONAL / REAL TEST-NETWORK LAB</span>
+        <h2 id="networkTitle">Take the next step onto Midnight.</h2>
+        <p class="learn-lead">The animation above is simulated. Here you can read a real finalized block and, with your wallet’s approval, send <strong>1 raw unit of a selected test token back to your own address</strong>. This is a public, unshielded connectivity test—not a vote, voting token or eligibility proof. No passport, credential or ballot is included.</p>
+        <div class="lab-controls">
+          <label>Test network<select id="testNetwork"><option value="preview">Preview</option><option value="preprod">Preprod</option></select></label>
+          <button class="ghost-button" id="checkNetwork" type="button">1. Check live network</button>
+          <label>Wallet<select id="walletChoice"><option>No wallet detected</option></select></label>
+          <button class="ghost-button" id="connectWallet" type="button">2. Connect wallet</button>
+        </div>
+        <p id="networkReadout" class="lab-readout" role="status">Not checked. Network requests contain no demo identity information.</p>
+        <p id="walletReadout" class="lab-readout" role="status">Use a Midnight wallet supporting DApp Connector v4 in this browser. Never enter a seed phrase here.</p>
+        <div class="funding-note"><strong>3. Fund this same network</strong><p>Use free test tokens and follow your wallet’s DUST registration instructions. Transactions consume tDUST; funding does not guarantee immediate fee capacity. Google’s “testnet” label may refer to a different network—check before requesting funds.</p><a href="https://cloud.google.com/application/web3/faucet/midnight/testnet" target="_blank" rel="noreferrer">Google Cloud faucet ↗</a> · <a id="networkFaucet" href="https://midnight-tmnight-preview.nethermind.dev/" target="_blank" rel="noreferrer">Matching Preview faucet ↗</a> · <a href="https://docs.midnight.network/guides/acquire-tokens" target="_blank" rel="noreferrer">Funding guide ↗</a></div>
+        <div class="lab-controls"><label class="token-field">Token type (hex) · 1 raw unit<select id="testToken" disabled><option>Connect to load balances</option></select></label><button class="primary-button" id="sendTestTransaction" type="button" disabled>4. Approve self-transfer in wallet →</button><button class="ghost-button" id="refreshWallet" type="button" disabled>Refresh balances / history</button></div>
+        <label class="lab-opt-in"><input id="includeNetworkStep" type="checkbox"> At the end of the animated demo, stop here for a real test transaction (never auto-submit).</label>
+        <ol class="live-steps" aria-label="Real transaction progress"><li data-live-step="prepare">Prepare</li><li data-live-step="approve">Wallet approval / build</li><li data-live-step="submit">Submit</li><li data-live-step="receipt">Submission receipt</li></ol>
+        <p class="lab-readout" id="liveReceipt" role="status">No live transaction submitted. Wallet/build time includes any proving; it is not an isolated ZK benchmark.</p>
+        <h3>Wallet-reported recent transactions</h3><p>These may include other activity. They are not automatically attributed to this test; confirm the matching transfer in your wallet. Submission acknowledgment is not finality.</p>
+        <div id="walletHistory" class="lab-readout">No history loaded.</div>
+        <a id="networkExplorer" href="https://preview.midnightexplorer.com/" target="_blank" rel="noreferrer">Open Preview explorer ↗</a>
+      </section>
+    </main>
+
+    <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
