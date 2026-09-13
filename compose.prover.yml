@@ -1,0 +1,6 @@
+services:
+  prover:
+    image: midnightntwrk/proof-server:8.1.0
+    ports:
+      - "127.0.0.1:6300:6300"
+    restart: "no"

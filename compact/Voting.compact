@@ -1,0 +1,84 @@
+pragma language_version >= 0.23;
+
+import CompactStandardLibrary;
+
+// Fictional-document POC: identity policy belongs to the OFF-CHAIN authority.
+// No passport-derived identifier is accepted or retained by this contract.
+export enum Phase { ENROLLMENT, VOTING, CLOSED }
+export ledger electionId: Bytes<32>;
+export ledger instance: Bytes<32>;
+export ledger authority: Bytes<32>;
+export ledger phase: Phase;
+export ledger eligible: MerkleTree<8, Bytes<32>>;
+export ledger enrolled: Set<Bytes<32>>;
+export ledger usedNullifiers: Set<Bytes<32>>;
+export ledger eligibleCount: Counter;
+export ledger yesVotes: Counter;
+export ledger noVotes: Counter;
+
+witness authoritySecret(): Bytes<32>;
+witness credentialSecret(): Bytes<32>;
+witness membershipPath(): MerkleTreePath<8, Bytes<32>>;
+
+constructor(id: Bytes<32>, instanceNonce: Bytes<32>, authorityCommitment: Bytes<32>) {
+  electionId = disclose(id);
+  instance = disclose(instanceNonce);
+  authority = disclose(authorityCommitment);
+  phase = Phase.ENROLLMENT;
+}
+
+export circuit authorityKey(secret: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "private-ballot:authority:v1"), secret]);
+}
+
+export circuit commitment(id: Bytes<32>, nonce: Bytes<32>, secret: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<4, Bytes<32>>>([pad(32, "private-ballot:credential:v1"), id, nonce, secret]);
+}
+
+export circuit votingNullifier(id: Bytes<32>, nonce: Bytes<32>, contractAddress: ContractAddress, secret: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<5, Bytes<32>>>([pad(32, "private-ballot:vote:v1"), id, nonce, contractAddress.bytes, secret]);
+}
+
+circuit authorize(): [] {
+  assert(authorityKey(authoritySecret()) == authority, "UNAUTHORIZED_AUTHORITY");
+}
+
+export circuit enroll(credentialCommitment: Bytes<32>): [] {
+  authorize();
+  assert(phase == Phase.ENROLLMENT, "ENROLLMENT_CLOSED");
+  const publicCommitment = disclose(credentialCommitment);
+  assert(!enrolled.member(publicCommitment), "COMMITMENT_ALREADY_ENROLLED");
+  assert(!eligible.isFull(), "ELIGIBILITY_TREE_FULL");
+  eligible.insert(publicCommitment);
+  enrolled.insert(publicCommitment);
+  eligibleCount.increment(1);
+}
+
+export circuit openVoting(): [] {
+  authorize();
+  assert(phase == Phase.ENROLLMENT, "WRONG_ELECTION_PHASE");
+  assert(eligibleCount >= 2, "ENROLL_AT_LEAST_TWO_CREDENTIALS");
+  // No exported circuit can change the tree once voting starts.
+  phase = Phase.VOTING;
+}
+
+export circuit vote(yes: Boolean): Bytes<32> {
+  assert(phase == Phase.VOTING, "VOTING_NOT_OPEN");
+  const secret = credentialSecret();
+  const path = membershipPath();
+  assert(path.leaf == commitment(electionId, instance, secret), "CREDENTIAL_LEAF_MISMATCH");
+  assert(eligible.checkRoot(disclose(merkleTreePathRoot<8, Bytes<32>>(path))), "INVALID_MEMBERSHIP_ROOT");
+  const nullifier = disclose(votingNullifier(electionId, instance, kernel.self(), secret));
+  assert(!usedNullifiers.member(nullifier), "CREDENTIAL_ALREADY_USED");
+  usedNullifiers.insert(nullifier);
+  // Public tally: the choice is public. This is NOT a secret-tally scheme.
+  if (disclose(yes)) { yesVotes.increment(1); }
+  else { noVotes.increment(1); }
+  return nullifier;
+}
+
+export circuit closeElection(): [] {
+  authorize();
+  assert(phase == Phase.VOTING, "VOTING_NOT_OPEN");
+  phase = Phase.CLOSED;
+}

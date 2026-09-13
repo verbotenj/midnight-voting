@@ -1,0 +1,26 @@
+// PSEUDOCODE INTEGRATION SEAM — intentionally not presented as deployable Compact.
+// Pin the compiler/SDK version and replace the simulator verifier before devnet use.
+
+ledger electionId: Bytes<32>;
+ledger eligibilityRoot: Bytes<32>;
+ledger usedNullifiers: Set<Bytes<32>>;
+ledger yesVotes: Counter;
+ledger noVotes: Counter;
+ledger electionOpen: Boolean;
+
+// Private witness inputs:
+//   credentialSecret, Merkle membership path
+// Public inputs:
+//   electionId, eligibilityRoot, vote nullifier, choice
+// Circuit assertions:
+//   1. HASH(domainCredential, electionId, credentialSecret) is in eligibilityRoot
+//   2. nullifier == HASH(domainNullifier, electionId, "vote", credentialSecret)
+//   3. electionOpen
+// Ledger transition:
+//   4. assert !usedNullifiers.member(nullifier)
+//   5. usedNullifiers.insert(nullifier)
+//   6. increment only the selected tally
+
+// Production note: use the primitives and exact syntax from the pinned Midnight
+// Compact release. Do not replace these assertions with the simulator's private
+// witness HTTP payload.
