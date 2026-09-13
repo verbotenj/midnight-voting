@@ -1,0 +1,43 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { once } from "node:events";
+process.env.NODE_ENV = "test";
+const { server } = await import("../server.js");
+
+test("HTTP serves the explainer and routes live reads separately from demo state", async t => {
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const originalFetch = globalThis.fetch;
+  t.mock.method(globalThis, "fetch", async (url, options) => {
+    if (!String(url).startsWith("https://rpc.")) return originalFetch(url, options);
+    const { method } = JSON.parse(options.body);
+    const results = { system_chain: String(url).includes("rpc.preview.") ? "Midnight Preview" : "Midnight Preprod", chain_getFinalizedHead: "0xabc", chain_getHeader: { number: "0x2a" } };
+    return { ok: true, json: async () => ({ result: results[method] }) };
+  });
+  const page = await fetch(base);
+  assert.equal(page.status, 200);
+  const html = await page.text();
+  assert.match(html, /id="zkExplainer"/);
+  assert.match(html, /id="networkLab"/);
+  assert.match(html, /id="previewBallot"/);
+  assert.match(html, /id="testNetwork"><option value="preview">/);
+  assert.match(html, /id="networkFaucet" href="https:\/\/midnight-tmnight-preview.nethermind.dev\//);
+  assert.equal((await fetch(`${base}/wallet-lab.js`)).status, 200);
+  assert.equal((await fetch(`${base}/api/midnight/network?network=mainnet`)).status, 400);
+  const before = await (await fetch(`${base}/api/state`)).json();
+  const network = await (await fetch(`${base}/api/midnight/network?network=preprod`)).json();
+  assert.equal(network.height, 42);
+  const defaultNetwork = await (await fetch(`${base}/api/midnight/network`)).json();
+  assert.equal(defaultNetwork.network, "preview");
+  assert.equal(defaultNetwork.chain, "Midnight Preview");
+  const after = await (await fetch(`${base}/api/state`)).json();
+  assert.deepEqual(after, before, "RPC reads must not alter the election");
+  const untrusted = await fetch(`${base}/api/preview/actions`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+  assert.equal(untrusted.status, 403);
+  assert.equal((await untrusted.json()).code, "EXPLICIT_SAME_ORIGIN_JSON_ACTION_REQUIRED");
+  const crossOrigin = await fetch(`${base}/api/preview/job`, { headers: { origin: "https://attacker.example" } });
+  assert.equal(crossOrigin.status, 403);
+  assert.equal((await crossOrigin.json()).code, "LOCAL_SAME_ORIGIN_REQUIRED");
+});
