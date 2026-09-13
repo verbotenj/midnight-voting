@@ -1,7 +1,7 @@
 # Midnight Voting
 
 A fictional passport-eligibility demo and proof-backed voting POC on **Midnight
-Preview**. Maintained by [@verbotenj](https://github.com/verbotenj).
+Preview**.
 
 Two valid demo passports receive one election-scoped credential each; a revoked
 document receives none. Valid credentials can vote once. Passport IDs do not enter
@@ -137,5 +137,9 @@ data; it must not be exposed as an untrusted remote service.
 See [SECURITY.md](SECURITY.md), [CONTRIBUTING.md](CONTRIBUTING.md),
 [the engineering overview](docs/ENGINEERING.md), and
 [the attack matrix](ATTACK_MATRIX.md). Secrets, generated artifacts, dependency
-folders and test output are excluded from Git. No open-source license is granted
-yet; package metadata is `UNLICENSED`.
+folders and test output are excluded from Git.
+
+## License
+
+Licensed under the [Apache License, Version 2.0](LICENSE). Third-party dependencies
+retain their respective licenses.

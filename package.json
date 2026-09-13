@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Fictional passport eligibility simulator and proof-backed voting POC on Midnight Preview",
   "author": "verbotenj <20187617+verbotenj@users.noreply.github.com>",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "repository": { "type": "git", "url": "https://github.com/verbotenj/midnight-voting.git" },
   "scripts": {
     "repo:check": "node scripts/check-repository.js",
