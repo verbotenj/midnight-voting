@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: midnight-voting
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci --omit=dev --ignore-scripts
+    startCommand: npm run start:public
+    healthCheckPath: /health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_VERSION
+        value: 24.16.0
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0

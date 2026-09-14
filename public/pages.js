@@ -80,5 +80,6 @@ export function initializePages() {
     navigatePage(link.getAttribute("href"));
   });
   window.addEventListener("popstate", () => navigatePage(location.href, { push: false }));
+  window.addEventListener("hashchange", () => navigatePage(location.href, { push: false }));
   navigatePage(location.href, { push: false, focus: false });
 }

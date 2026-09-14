@@ -14,6 +14,9 @@ biometrics, production keys or mainnet funds belong in this repository.
 - Ledger-v8's local WASM checks are not a cryptographic proof verifier. Distinguish
   compiled-logic checks, actual node rejection and finalized receipt evidence.
 - Keep the app and proof server on loopback. They are not hardened hosted services.
+- For public demonstrations, use only `public-server.js`: isolated disposable
+  sessions, fictional IDs, allowlisted files and no live operations. See
+  [hosting boundaries](docs/HOSTING.md). This is not a shared election authority.
 
 Never commit `.env*` (except the blank template), `.local/`, private-state databases,
 wallet seeds or SDK dumps. Private repository visibility is not secret storage.

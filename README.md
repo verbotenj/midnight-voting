@@ -90,6 +90,11 @@ distinct evidence. See [acceptance status](docs/ACCEPTANCE-STATUS.md).
 
 ## Opt-in live development
 
+For a public, simulation-only deployment, use the Free service in `render.yaml`.
+It serves the UI and Node API together, isolates visitors, and disables all live
+operations. See [public hosting](docs/HOSTING.md). Never host `server.js` publicly
+or upload your local `.env` / `.local` data.
+
 Read [the runbook](docs/PREVIEW-RUNBOOK.md) before sending transactions. On an
 existing funded development machine, **preserve its seeds and journals**.
 
@@ -136,7 +141,7 @@ timing and the shared development host can correlate activity. This is **not** a
 production secret-ballot system. The trusted local prover receives private witness
 data; it must not be exposed as an untrusted remote service.
 
-See [SECURITY.md](SECURITY.md), [CONTRIBUTING.md](CONTRIBUTING.md),
+See [SECURITY.md](SECURITY.md),
 [the engineering overview](docs/ENGINEERING.md), and
 [the attack matrix](ATTACK_MATRIX.md). Secrets, generated artifacts, dependency
 folders and test output are excluded from Git.

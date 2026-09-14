@@ -1,3 +1,5 @@
+import { HOSTED_DEMO } from "./runtime.js";
+import { initializeHostedDemo } from "./hosted-demo.js";
 import { initializePages, navigatePage } from "./pages.js";
 import { initializeNetworkLab } from "./wallet-lab.js";
 import { initializePreviewBallot } from "./preview-ballot.js";
@@ -5,8 +7,8 @@ import { DemoPlayer, DemoStopped } from "./demo-player.js";
 import { inspectRequest, inspectLocal, inspectPublic, resetInspector, initializeInspector, highlightBoundary } from "./payload-inspector.js";
 initializePages();
 initializeInspector();
-initializeNetworkLab();
-initializePreviewBallot();
+if (HOSTED_DEMO) initializeHostedDemo();
+else { initializeNetworkLab(); initializePreviewBallot(); }
 const ELECTION_ID = "ELECTION-DEMO-2026-001";
 const STORAGE_KEY = "private-ballot-demo-credentials-v1";
 const DOMAIN = {
@@ -267,6 +269,10 @@ async function api(path, options = {}) {
       headers: { "content-type": "application/json", ...(options.headers || {}) },
     });
     const result = await response.json();
+    if (HOSTED_DEMO && result.code === "DEMO_SESSION_EXPIRED") {
+      localStorage.removeItem(STORAGE_KEY);
+      toast("Demo session expired", "The free server restarted or your session expired. Refresh the page to begin a new simulation.", "error");
+    }
     exchange?.received(response.status, result);
     return { ok: response.ok, status: response.status, ...result };
   } catch {
@@ -397,6 +403,14 @@ async function refresh() {
     return false;
   }
   renderAuthority(state.authority);
+  if (HOSTED_DEMO && state.sessionVersion) {
+    const previous = localStorage.getItem("private-ballot-hosted-version");
+    if (previous !== state.sessionVersion) {
+      localStorage.removeItem(STORAGE_KEY);
+      preparedCredentials.clear();
+      localStorage.setItem("private-ballot-hosted-version", state.sessionVersion);
+    }
+  }
   renderPublic(state.public);
   renderVoter();
   return true;

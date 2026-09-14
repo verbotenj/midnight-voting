@@ -6,7 +6,10 @@
   "description": "Fictional passport eligibility simulator and proof-backed voting POC on Midnight Preview",
   "author": "verbotenj <20187617+verbotenj@users.noreply.github.com>",
   "license": "Apache-2.0",
-  "repository": { "type": "git", "url": "https://github.com/verbotenj/midnight-voting.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/verbotenj/midnight-voting.git"
+  },
   "scripts": {
     "repo:check": "node scripts/check-repository.js",
     "contract:setup": "node scripts/setup-compact.js",
@@ -29,9 +32,11 @@
     "wallets:receipts": "node scripts/verify-dust-receipts.js",
     "prover:start": "docker compose -p private-ballot-dev -f compose.prover.yml up -d",
     "start": "node server.js",
+    "start:public": "node public-server.js",
     "dev": "node --watch server.js",
     "test": "node --test",
     "test:e2e": "playwright test",
+    "test:public": "playwright test --config playwright.public.config.js",
     "test:e2e:headed": "playwright test --headed --project=desktop",
     "check": "node --check server.js && node --check public/app.js && node --check public/demo-player.js && node --check public/payload-inspector.js && node --check public/preview-ballot.js && node --check public/wallet-lab.js && node --test"
   },

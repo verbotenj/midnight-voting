@@ -33,4 +33,5 @@ jobs:
       - run: npm run contract:test
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - run: npm run test:public
       # Never restore wallet secrets, start live actors, deploy, or spend DUST here.
