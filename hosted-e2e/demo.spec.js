@@ -1,13 +1,13 @@
 import { test, expect } from "@playwright/test";
 
-test("hosted walkthrough completes and leaves another visitor untouched", async ({ page, browser }) => {
+test("hosted walkthrough completes and leaves another visitor untouched", async ({ page, browser, baseURL }) => {
   const errors = [], liveRequests = [];
   page.on("pageerror", error => errors.push(error.message));
   page.on("request", request => { if (/\/api\/(preview|midnight)\//.test(request.url())) liveRequests.push(request.url()); });
   const other = await browser.newContext();
   try {
     const visitor = await other.newPage();
-    await visitor.goto("http://127.0.0.1:4175/developer");
+    await visitor.goto(new URL("/developer", baseURL).href);
     await expect(visitor.locator("#eligibleCount")).toHaveText("0");
     await page.goto("/");
     await expect(page.locator(".hosted-notice")).toBeVisible();

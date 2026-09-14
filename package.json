@@ -33,6 +33,10 @@
     "prover:start": "docker compose -p private-ballot-dev -f compose.prover.yml up -d",
     "start": "node server.js",
     "start:public": "node public-server.js",
+    "dev:cloudflare": "node scripts/cloudflare.js dev --ip 127.0.0.1 --port 4176",
+    "build:cloudflare": "node scripts/cloudflare.js deploy --dry-run --outdir .local/cloudflare-build",
+    "deploy:cloudflare": "node scripts/cloudflare.js deploy",
+    "test:cloudflare": "playwright test --config playwright.cloudflare.config.js",
     "dev": "node --watch server.js",
     "test": "node --test",
     "test:e2e": "playwright test",
@@ -62,6 +66,7 @@
     "@scure/base": "2.4.0",
     "effect": "3.22.2",
     "rxjs": "7.8.2",
+    "wrangler": "4.131.2",
     "ws": "8.21.3"
   }
 }

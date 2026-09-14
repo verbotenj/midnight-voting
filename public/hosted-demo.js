@@ -1,8 +1,10 @@
+import { HOSTING_PLATFORM } from "./runtime.js";
+
 export function initializeHostedDemo() {
   document.body.dataset.hostedDemo = "true";
   const banner = document.createElement("p");
   banner.className = "hosted-notice";
-  banner.textContent = "Public simulation · fictional passports only · your browser has its own demo session. The free server may take a minute to wake up. Sessions reset after restart or one hour idle.";
+  banner.textContent = "Public simulation · fictional passports only · your browser has its own demo session. " + (HOSTING_PLATFORM === "cloudflare" ? "Demo state is stored temporarily and expires after one hour idle. No wallet or real passport data belongs here." : "The free server may take a minute to wake up. Sessions reset after restart or one hour idle.");
   document.querySelector("main").prepend(banner);
   const preview = document.getElementById("previewPage");
   preview.querySelector("h1").textContent = "Real chain evidence, kept separate.";

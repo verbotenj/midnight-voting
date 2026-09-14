@@ -34,4 +34,6 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: npm run test:public
+      - run: npm run build:cloudflare
+      - run: npm run test:cloudflare
       # Never restore wallet secrets, start live actors, deploy, or spend DUST here.

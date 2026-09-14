@@ -43,7 +43,7 @@ export function createPublicServer({ origin, maxSessions = 250, now = Date.now }
         if (request.method !== "GET" && request.method !== "HEAD") return send(405, { code: "METHOD_NOT_ALLOWED" });
         let content, type;
         if (url.pathname === "/runtime.js") {
-          content = "export const HOSTED_DEMO = true;\n";
+          content = "export const HOSTED_DEMO = true; export const HOSTING_PLATFORM = 'node';\n";
           type = "text/javascript";
         } else {
           const asset = files.get(url.pathname);

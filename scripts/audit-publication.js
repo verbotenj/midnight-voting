@@ -26,7 +26,7 @@ const patterns = [/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/, /\bgh[pou
 function scan(content, label) {
   if (patterns.some(pattern => pattern.test(content)) || [...secrets].some(secret => content.includes(secret))) throw new Error(`Possible secret in ${label}; investigate privately before publishing.`);
 }
-const privatePath = /(^|\/)(\.local|node_modules|test-results|playwright-report)(\/|$)|^compact\/managed\/|(^|\/)\.env(?:\..*)?$|\.(?:pem|key|seed|sqlite\w*|db|log)$/i;
+const privatePath = /(^|\/)(\.local|\.wrangler|node_modules|test-results|playwright-report)(\/|$)|^compact\/managed\/|(^|\/)(\.env|\.dev\.vars)(?:\..*)?$|\.(?:pem|key|seed|sqlite\w*|db|log)$/i;
 const objects = run("git", ["rev-list", "--objects", "--all"]).trim().split("\n");
 for (const object of objects) {
   const path = object.slice(object.indexOf(" ") + 1);
@@ -41,6 +41,11 @@ for (const line of types.trim().split("\n")) {
 }
 const tracked = run("git", ["ls-files", "-z"]).split("\0").filter(Boolean);
 for (const path of tracked) scan(readFileSync(path, "utf8"), path);
+// The Cloudflare dry-run bundle is ignored, but it is the actual deployment
+// payload. Check it and its source map against the same known local secrets.
+for (const path of [".local/cloudflare-build/worker.js", ".local/cloudflare-build/worker.js.map"]) {
+  if (existsSync(path)) scan(readFileSync(path, "utf8"), path);
+}
 let logs = 0;
 if (process.argv.includes("--github")) {
   const runs = JSON.parse(run("gh", ["api", "repos/verbotenj/midnight-voting/actions/runs?per_page=100"]));

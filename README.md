@@ -90,10 +90,11 @@ distinct evidence. See [acceptance status](docs/ACCEPTANCE-STATUS.md).
 
 ## Opt-in live development
 
-For a public, simulation-only deployment, use the Free service in `render.yaml`.
-It serves the UI and Node API together, isolates visitors, and disables all live
-operations. See [public hosting](docs/HOSTING.md). Never host `server.js` publicly
-or upload your local `.env` / `.local` data.
+For a public, simulation-only deployment, use Cloudflare Workers Free with
+`wrangler.jsonc` (UI + API + isolated, temporary SQLite-backed demo sessions).
+`render.yaml` remains an alternative Node hosting configuration. Both disable
+all live operations. See [public hosting](docs/HOSTING.md). Never host `server.js`
+publicly or upload your local `.env` / `.local` data.
 
 Read [the runbook](docs/PREVIEW-RUNBOOK.md) before sending transactions. On an
 existing funded development machine, **preserve its seeds and journals**.

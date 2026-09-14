@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "midnight-voting",
+  "main": "cloudflare/worker.js",
+  "compatibility_date": "2026-09-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "html_handling": "none"
+  },
+  "durable_objects": { "bindings": [{ "name": "DEMO", "class_name": "DemoCoordinator" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DemoCoordinator"] }],
+  "observability": { "enabled": false },
+  "send_metrics": false
+}

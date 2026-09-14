@@ -1,4 +1,56 @@
-# Public simulation on Render
+# Public simulation hosting
+
+## Cloudflare Workers — preferred, no-card free plan
+
+The UI and API deploy together as a Worker with static assets. The public runtime
+imports only the fictional domain model, Node-compatible hashing, and Cloudflare
+storage APIs. There is no Midnight SDK, prover, wallet binding, or live-chain route.
+
+```sh
+npm ci --ignore-scripts
+npm run check
+npm run build:cloudflare
+npm run test:cloudflare
+```
+
+`npm run dev:cloudflare` runs the Worker and SQLite-backed Durable Object locally
+on port 4176. `npm run deploy:cloudflare` publishes with an already-authorized
+Cloudflare CLI account. The CLI wrapper disables dotenv loading and strips Midnight
+environment variables. Never upload `.env*`, `.local`, `.dev.vars`, or wallet files.
+
+In the Cloudflare dashboard, create a Worker from GitHub, grant repository access
+only to `verbotenj/midnight-voting`, and select `main`. Worker name: `midnight-voting`.
+Use `npm run build:cloudflare` as the build command and `npm run deploy:cloudflare`
+as the deploy command. Keep the Workers Free plan; no paid add-ons or domain purchase
+is needed. `wrangler.jsonc` defines the assets and SQLite Durable Object migration.
+
+Cloudflare Git integration can deploy each push to `main`. This does **not** by
+itself wait for the separate GitHub Actions workflow. For CI-gated deployments,
+run the required checks in the Cloudflare build command or configure a GitHub
+Actions deploy job after validation, using an owner-approved scoped Cloudflare
+token stored as a GitHub secret. Do not claim CI gating until it is configured.
+
+One bounded Durable Object coordinates up to 250 independent browser sessions.
+SQLite transactions serialize issuance/nullifier checks and mutations; state
+survives object restarts. Each session expires after one hour idle; request-time
+cleanup and a 15-minute alarm remove expired live rows. Platform backups may outlive
+application expiry. Only fictional IDs, commitments, nullifiers, tallies, and
+bounded demo events are stored—not the submitted synthetic credential secret.
+Cookies are HttpOnly, SameSite=Strict, and Secure on HTTPS. Each session is limited
+to 120 API requests/minute; the coordinator is capped at 2,400/minute. These are
+demo guardrails, not an abuse-proof quota guarantee or production election design.
+
+The Free plan has resource quotas. If they are exhausted, the demo can become
+unavailable; do not upgrade automatically. SQLite-backed Durable Objects support
+the Free plan. See [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/),
+[Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/),
+and [Git integration](https://developers.cloudflare.com/workers/ci-cd/builds/git-integration/).
+
+To verify an owner-approved deployed simulation, run
+`CLOUDFLARE_TEST_URL=https://<actual-worker-host>.workers.dev npm run test:cloudflare`.
+Tests use fresh isolated cookies, not another visitor's election.
+
+## Render — alternative
 
 Host the UI and Node API together. GitHub is the public source repository; GitHub
 Pages is not used. `render.yaml` selects the Free web-service plan explicitly.

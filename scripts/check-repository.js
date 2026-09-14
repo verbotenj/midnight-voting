@@ -5,7 +5,7 @@ import { execFileSync } from "node:child_process";
 // is performed before initial publication; this guard is not a full DLP scanner.
 const files = execFileSync("git", ["ls-files", "-z"], { encoding: "utf8" }).split("\0").filter(Boolean);
 if (!files.length) throw new Error("NO_TRACKED_SOURCE_TO_CHECK");
-const forbidden = /(^|\/)(\.local|node_modules|playwright-report|test-results|coverage)(\/|$)|^compact\/managed\/|(^|\/)\.env(?:\..*)?$|\.(?:pem|key|p12|pfx|seed|sqlite\w*|db|log|zip|tgz)$/i;
+const forbidden = /(^|\/)(\.local|\.wrangler|node_modules|playwright-report|test-results|coverage)(\/|$)|^compact\/managed\/|(^|\/)(\.env|\.dev\.vars)(?:\..*)?$|\.(?:pem|key|p12|pfx|seed|sqlite\w*|db|log|zip|tgz)$/i;
 const credentialPatterns = [
   /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
   /\bgh[pousr]_[A-Za-z0-9]{30,}\b/,
