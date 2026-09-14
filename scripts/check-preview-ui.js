@@ -20,7 +20,7 @@ try {
       if (route.request().method() !== "GET") { writes.push(route.request().url()); return route.abort(); }
       return route.continue();
     });
-    await page.goto("http://127.0.0.1:4173/");
+    await page.goto("http://127.0.0.1:4173/preview");
     await page.locator("#previewInspect").click();
     await expect(page.locator("#previewStatus")).toContainText("7 receipts · CLOSED · YES 1 / NO 1", { timeout: 65000 });
     await expect(page.locator("#previewContract")).toHaveText(deployment.contractAddress);

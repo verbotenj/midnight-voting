@@ -133,7 +133,9 @@ Do not add free-form passport uploads or send real document numbers to the demo 
 
 Run `npm run test:e2e` for Chromium desktop and mobile-viewport projects. Tests start an isolated server on port 4174, use fictional data, and never import `.env.development` or broadcast wallet transactions. The normal development app remains on 4173.
 
-Default step mode waits indefinitely at each checkpoint. Comfortable autoplay allows six seconds of reading before a step; quick replay allows two. Pause waits after the current action; Next advances a checkpoint; Stop allows an in-flight action to settle and then prevents the next step. Reduced motion removes moving packets but retains their reading time. Manual actions are disabled using actual button state, including for keyboard users.
+The Demo page (`/`) shows one animation frame and one numbered checkpoint at a time. There is no autoplay or pace selector: **Run this step** is the only way to advance. Stop allows an in-flight action to settle and then prevents the next step. Reduced motion removes moving packets but never skips a reading checkpoint. Manual actions are disabled using actual button state, including for keyboard users.
+
+The explanations live at `/learn`, manual simulator controls and payload inspection at `/developer`, and real chain tools at `/preview`. These URL-addressable views preserve the current walkthrough and payload snapshots during in-app navigation and browser Back. Visiting a page does not reset the simulation, restore a wallet, or submit a transaction. Reloading restarts the browser controller, not the authority's issuance state.
 
 The full-flow test deliberately uses real animation time. Failure-only traces, screenshots and video are saved in git-ignored `test-results/`; the HTML report goes to `playwright-report/`. These traces are suitable only for fictional records: recordings can capture private request bodies and device state. Never run this recording setup on real passports or production credentials.
 

@@ -20,7 +20,7 @@ test("closed Preview receipt walkthrough waits for clicks and cannot broadcast",
     requests.push(route.request());
     return route.fulfill({ json: closed() });
   });
-  await page.goto("/");
+  await page.goto("/preview");
   expect(requests).toHaveLength(0);
   await page.locator("#previewInspect").click();
   await expect(page.locator("#previewStatus")).toContainText("7 receipts · CLOSED · YES 1 / NO 1");
@@ -51,7 +51,7 @@ test("live step needs consent, follows actual job events and never autoplays", a
     if (request.method() === "POST") { input = request.postDataJSON(); posts.push(input); return route.fulfill({ status: 202, json: { job: { ...job(), state: "queued" } } }); }
     return route.fulfill({ json: request.url().endsWith("/job") ? { job: job(), workersReady: true } : state });
   });
-  await page.goto("/");
+  await page.goto("/preview");
   await page.locator("#previewInspect").click();
   await page.locator("#previewActionPanel > summary").click();
   await expect(page.locator("#previewRun")).toBeDisabled();
@@ -74,7 +74,7 @@ test("live step needs consent, follows actual job events and never autoplays", a
 test("failed Preview read removes stale success and disables live actions", async ({ page }) => {
   let failed = false;
   await page.route("**/api/preview/**", route => route.fulfill(failed ? { status: 503, json: { code: "PREVIEW_INSPECTION_UNAVAILABLE" } } : { json: closed() }));
-  await page.goto("/");
+  await page.goto("/preview");
   await page.locator("#previewInspect").click();
   await expect(page.locator("#previewState")).toBeVisible();
   failed = true;
@@ -93,7 +93,7 @@ test("unknown operation outcome never becomes confirmed and cannot be retried bl
     if (request.url().endsWith("/job")) return route.fulfill({ status: 503, json: { code: "STATUS_UNAVAILABLE" } });
     return route.fulfill({ json: enrollment() });
   });
-  await page.goto("/"); await page.locator("#previewInspect").click();
+  await page.goto("/preview"); await page.locator("#previewInspect").click();
   await page.locator("#previewActionPanel > summary").click();
   await page.locator("#previewConsent").check(); await page.locator("#previewRun").click();
   await expect(page.locator("#previewStatus")).toContainText("response unavailable or rejected");

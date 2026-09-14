@@ -1,7 +1,9 @@
+import { initializePages, navigatePage } from "./pages.js";
 import { initializeNetworkLab } from "./wallet-lab.js";
 import { initializePreviewBallot } from "./preview-ballot.js";
 import { DemoPlayer, DemoStopped } from "./demo-player.js";
 import { inspectRequest, inspectLocal, inspectPublic, resetInspector, initializeInspector, highlightBoundary } from "./payload-inspector.js";
+initializePages();
 initializeInspector();
 initializeNetworkLab();
 initializePreviewBallot();
@@ -21,11 +23,11 @@ const ui = Object.fromEntries([
   "copyRoot", "toastRegion", "transactionTheater", "flowStatus", "networkStage",
   "packetLayer", "traceList", "clearTrace", "deviceNode", "authorityNode", "midnightNode",
   "deviceNodeState", "authorityNodeState", "midnightNodeState", "selectionConfirmation",
-  "selectedPassportValue", "nextInstruction", "demoPace", "nfcReadButton", "nfcReadStatus",
+  "selectedPassportValue", "nextInstruction", "nfcReadButton", "nfcReadStatus",
 ].map((id) => [id, document.getElementById(id)]));
 
 const player = new DemoPlayer(Object.fromEntries([
-  ["next", "demoNext"], ["pause", "demoPause"], ["stop", "demoStop"],
+  ["next", "demoNext"], ["stop", "demoStop"],
   ["title", "demoStepTitle"], ["detail", "demoStepDetail"], ["results", "demoResults"],
 ].map(([key, id]) => [key, document.getElementById(id)])));
 
@@ -61,7 +63,7 @@ async function prepareCredential(passport, fresh = false) {
 }
 
 function currentPace() {
-  return guidedRunning && ui.demoPace.value !== "step" ? Number(ui.demoPace.value) : 2;
+  return 2;
 }
 
 const DEFAULT_NODE_COPY = {
@@ -300,7 +302,7 @@ function updateControlLock() {
   const locked = busy || guidedRunning;
   const credential = getCredentials()[selectedPassport];
   document.querySelectorAll(".passport-card, .vote-option").forEach(button => { button.disabled = locked; });
-  [ui.resetButton, ui.clearTrace, ui.guidedDemoButton, ui.demoPace].forEach(button => { button.disabled = locked; });
+  [ui.resetButton, ui.clearTrace, ui.guidedDemoButton].forEach(button => { button.disabled = locked; });
   ui.issueButton.disabled = locked || !selectedPassport || Boolean(credential?.secret);
   ui.copyAttackButton.disabled = locked || !credential?.secret;
   ui.voteButton.disabled = locked || !credential?.secret || !selectedChoice;
@@ -563,8 +565,9 @@ async function guidedDemo() {
   if (busy || guidedRunning) return;
   guidedRunning = true;
   updateControlLock();
-  player.start(ui.demoPace.value);
-  ui.guidedDemoButton.innerHTML = "<span>●</span> Playing animated demo…";
+  navigatePage("/");
+  player.start();
+  ui.guidedDemoButton.hidden = true;
   try {
     const reset = await api("/api/demo/reset", { method: "POST", body: "{}" });
     if (!reset.ok) {
@@ -580,7 +583,6 @@ async function guidedDemo() {
     resetProtocolTheater(true);
     if (!await refresh()) throw new Error("Cannot read the reset election.");
     ui.transactionTheater.scrollIntoView({ behavior: "smooth", block: "start" });
-    toast("Animated demo started", "Follow the numbered graph from passport selection to public tally.");
     await player.checkpoint("1 / 10 · Read the first passport", "Simulate the NFC session, DG1 + SOD read and authenticity checks for DEMO-P001. A successful read does not prove current eligibility.");
     await selectPassport("DEMO-P001");
     player.record("P001 NFC walkthrough", await simulateNfcRead(), "SIMULATED_READ");
@@ -611,10 +613,6 @@ async function guidedDemo() {
     player.record("Final tally 1–1; two credentials", { code: correct ? "VERIFIED" : "TALLY_MISMATCH" }, "VERIFIED");
     player.finish("Demo verified · YES 1 / NO 1", "Three fictional passports, two credentials, two accepted ballots. Duplicate issuance, duplicate voting and the revoked document were rejected. Results below are simulator assertions, not on-chain receipts.");
     toast("Demo complete: 3 → 2 → 2", "Two eligible credentials, two simulated ballots, verified tally 1–1.");
-    if (document.getElementById("includeNetworkStep").checked) {
-      document.getElementById("networkLab").scrollIntoView({ behavior: "smooth", block: "start" });
-      toast("Ready for the real-network step", "Check the network, connect and fund your wallet, then explicitly approve a self-transfer. The ballot remains simulated.");
-    }
   } catch (error) {
     const stopped = error instanceof DemoStopped;
     player.finish(stopped ? "Demo stopped" : "Demo failed verification", stopped ? "Completed actions remain in the local simulator. Start again to reset and replay." : error.message);
@@ -624,8 +622,8 @@ async function guidedDemo() {
     guidedRunning = false;
     updateControlLock();
     ui.guidedDemoButton.disabled = false;
-    ui.demoPace.disabled = false;
-    ui.guidedDemoButton.innerHTML = "<span>▶</span> Run full animated demo";
+    ui.guidedDemoButton.hidden = false;
+    ui.guidedDemoButton.textContent = "Restart walkthrough →";
   }
 }
 
@@ -654,7 +652,9 @@ ui.resetButton.addEventListener("click", () => manualAction(async () => {
   selectedChoice = null;
   resetProtocolTheater(true);
   player.results.replaceChildren();
-  player.finish("A complete ballot, at your pace", "Run the guided demo or choose a fictional passport below.");
+  document.getElementById("demoOutcome").textContent = "";
+  document.getElementById("demoPlayer").dataset.scene = "nfc";
+  player.finish("1 / 10 · Read the first passport", "Start the walkthrough, then run each step when you’re ready. Nothing advances automatically.");
   ui.nfcReadStatus.textContent = "Optional learning step. Select a fictional passport first. No NFC hardware or real document is accessed.";
   await refresh();
   setBusy(false);

@@ -2,15 +2,9 @@
 export class DemoStopped extends Error {}
 
 export class DemoPlayer {
-  constructor({ next, pause, stop, title, detail, results }) {
-    Object.assign(this, { next, pause, stop, title, detail, results });
+  constructor({ next, stop, title, detail, results }) {
+    Object.assign(this, { next, stop, title, detail, results });
     next.addEventListener("click", () => this.release?.());
-    pause.addEventListener("click", () => {
-      this.paused = !this.paused;
-      pause.textContent = this.paused ? "Resume autoplay" : "Pause after step";
-      if (this.paused) this.cancelTimer?.();
-      else this.release?.();
-    });
     stop.addEventListener("click", () => {
       this.stopped = true;
       stop.disabled = true;
@@ -19,13 +13,13 @@ export class DemoPlayer {
     });
   }
 
-  start(mode) {
-    this.mode = mode;
-    this.paused = mode === "step";
+  start() {
     this.stopped = false;
     this.results.replaceChildren();
-    this.pause.disabled = mode === "step";
-    this.pause.textContent = "Pause after step";
+    this.results.closest("details").open = false;
+    document.getElementById("demoOutcome").textContent = "";
+    this.next.hidden = false;
+    this.stop.hidden = false;
     this.stop.disabled = false;
   }
 
@@ -33,17 +27,18 @@ export class DemoPlayer {
     if (this.stopped) throw new DemoStopped();
     this.title.textContent = title;
     this.detail.textContent = detail;
+    const step = Number.parseInt(title, 10);
+    document.getElementById("demoPlayer").dataset.scene = [1, 6, 9].includes(step) ? "nfc" : "network";
+    const passport = { 1: "DEMO-P001", 6: "DEMO-P002", 9: "DEMO-P003" }[step];
+    if (passport) document.getElementById("nfcPassportLabel").textContent = passport;
+    this.next.textContent = "Run this step →";
     this.next.disabled = false;
     await new Promise(resolve => {
-      let timer;
-      this.cancelTimer = () => clearTimeout(timer);
-      this.release = () => { clearTimeout(timer); resolve(); };
-      // Reading time is separate from motion: reduced-motion must not rush text.
-      if (!this.paused) timer = setTimeout(this.release, this.mode === "1" ? 2000 : 6000);
+      this.release = resolve;
     });
     this.release = null;
-    this.cancelTimer = null;
     this.next.disabled = true;
+    this.next.textContent = "Animating…";
     if (this.stopped) throw new DemoStopped();
   }
 
@@ -53,13 +48,16 @@ export class DemoPlayer {
     row.dataset.result = passed ? "pass" : "fail";
     row.textContent = `${passed ? "PASS" : "FAIL"} · ${label} · ${result?.code || "NO_RESULT"}`;
     this.results.append(row);
+    document.getElementById("demoOutcome").textContent = row.textContent;
+    if (!passed) this.results.closest("details").open = true;
     if (!passed) throw new Error(`${label}: expected ${expected}, received ${result?.code || "NO_RESULT"}.`);
   }
 
   finish(title, detail) {
     this.title.textContent = title;
     this.detail.textContent = detail;
-    this.cancelTimer?.();
-    this.next.disabled = this.pause.disabled = this.stop.disabled = true;
+    this.next.disabled = this.stop.disabled = true;
+    this.next.hidden = true;
+    this.stop.hidden = true;
   }
 }

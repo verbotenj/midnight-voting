@@ -1,3 +1,4 @@
+import { navigatePage } from "./pages.js";
 const display = (id, value) => {
   document.getElementById(id).textContent = typeof value === "string" ? value : JSON.stringify(value, null, 2);
 };
@@ -14,6 +15,7 @@ export function highlightBoundary(kind, message) {
 
 export function initializeInspector() {
   const openBoundary = kind => {
+    navigatePage("/developer", { focus: false });
     document.getElementById("payloadInspector").open = true;
     const panel = document.querySelector(`[data-payload-panel="${kind}"]`);
     panel.open = true;

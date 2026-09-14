@@ -43,7 +43,7 @@ const inspect = async () => {
   await expect(page.locator("#previewContract")).toHaveText(deployment.contractAddress);
 };
 try {
-  await page.goto("http://127.0.0.1:4173/#previewBallot");
+  await page.goto("http://127.0.0.1:4173/preview");
   await inspect();
   await page.locator("#previewActionPanel > summary").click();
   for (const [action, code] of steps) {

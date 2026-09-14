@@ -53,7 +53,7 @@ async function body(request) {
 }
 
 async function serveStatic(pathname, response) {
-  const relative = pathname === "/" ? "index.html" : pathname.slice(1);
+  const relative = ["/", "/learn", "/developer", "/preview"].includes(pathname) ? "index.html" : pathname.slice(1);
   const safePath = normalize(relative).replace(/^(\.\.(\/|\\|$))+/, "");
   let filePath = join(PUBLIC_DIR, safePath);
   try {

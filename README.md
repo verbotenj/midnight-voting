@@ -19,16 +19,18 @@ npm ci --ignore-scripts
 npm start
 ```
 
-Open **http://127.0.0.1:4173**. Select **Run full animated demo**. The default is
-step-by-step: read the explanation, then press **Next step**. Comfortable autoplay
-and quick replay are optional. Reset affects only the local simulation.
+Open **http://127.0.0.1:4173**. Select **Start walkthrough**, then **Run this step**
+for each of the ten steps. There is no autoplay. Reset affects only the local
+simulation. The focused Demo page shows one animation at a time; **Learn** holds
+the explanations, **Developer** has manual controls and payload inspection, and
+**Live Preview** has real-chain audit and explicit test-transaction tools.
 
 The fictional NFC animation shows passport → device → reading → local credential
 preparation. Reading alone issues no voting right and supplies no authoritative
 `documentStatus`. **Verify & issue credential** contacts the mock authority.
 Use only `DEMO-P001`, `DEMO-P002`, and revoked `DEMO-P003`.
 
-Expand **Developer view · what gets sent, and in what shape?** for local adapter
+On the **Developer** page, expand **Developer view · what gets sent, and in what shape?** for local adapter
 types, actual simulator HTTP requests/responses, and the separate Compact circuit
 signatures. Simulator witness values are hidden in the inspector, but still cross
 the simulator's local voting HTTP boundary. The local adapter shape is not an

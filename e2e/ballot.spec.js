@@ -14,15 +14,16 @@ test.beforeEach(async ({ page, request }) => {
   });
   // No test may broadcast a live network transaction or access a remote prover.
   await page.route("**/api/midnight/network**", route => route.fulfill({ status: 503, json: { code: "NETWORK_UNAVAILABLE" } }));
-  await page.goto("/");
+  await page.goto("/developer");
   await expect(page.locator("#registry .registry-row")).toHaveCount(3);
 });
 test.afterEach(async ({ page }) => { expect(pageErrors.get(page)).toEqual([]); });
 
-async function start(page, mode = "step") {
-  await page.locator("#demoPace").selectOption(mode);
+async function start(page) {
+  await page.getByRole("link", { name: "Demo", exact: true }).click();
   await page.locator("#guidedDemoButton").click();
   await expect(page.locator("#demoStepTitle")).toContainText("1 / 10");
+  await expect(page.locator("#demoNext")).toBeEnabled();
 }
 
 async function issue(page, passport = "DEMO-P001") {
@@ -33,7 +34,7 @@ async function issue(page, passport = "DEMO-P001") {
 }
 
 test("full human-paced NFC and three-passport ballot checks each result", async ({ page, request }, testInfo) => {
-  await expect(page.locator("#demoPace")).toHaveValue("step");
+  await expect(page.locator("#demoPace")).toHaveCount(0);
   await start(page);
   // A genuine reading-time assertion: the default cannot advance automatically.
   await page.waitForTimeout(2200);
@@ -139,15 +140,14 @@ test("failed reset and close preserve state and never claim success", async ({ p
   await expect(page.locator("#closeButton")).toBeEnabled();
 });
 
-test("pause, next and stop work without interrupting mutations", async ({ page, request }) => {
-  await start(page, "3");
-  await page.locator("#demoPause").click();
-  await expect(page.locator("#demoPause")).toHaveText("Resume autoplay");
+test("manual next and stop work without interrupting mutations", async ({ page, request }) => {
+  await start(page);
+  await expect(page.locator("#demoPause")).toHaveCount(0);
   await page.waitForTimeout(6500);
   await expect(page.locator("#demoResults li")).toHaveCount(0);
   await page.locator("#demoNext").click();
   await expect(page.locator("#demoStepTitle")).toContainText("2 / 10");
-  await page.locator("#demoPause").click();
+  await page.locator("#demoNext").click();
   await expect(page.locator("#demoNext")).toBeDisabled();
   await page.locator("#demoStop").click();
   await expect(page.locator("#demoStepTitle")).toHaveText("Demo stopped", { timeout: 18000 });
@@ -176,7 +176,7 @@ test("another device and a deleted app cannot obtain a second credential", async
   const other = await browser.newContext();
   try {
     const copy = await other.newPage();
-    await copy.goto("http://127.0.0.1:4174");
+    await copy.goto("http://127.0.0.1:4174/developer");
     await copy.locator('[data-passport="DEMO-P001"]').click();
     await copy.locator("#issueButton").click();
     await expect(copy.locator("#flowStatus")).toHaveText("ALREADY ISSUED");
@@ -190,6 +190,7 @@ test("another device and a deleted app cannot obtain a second credential", async
 });
 
 test("overview and controls fit the viewport and disclose engineering limitations", async ({ page }, testInfo) => {
+  await page.getByRole("link", { name: "Learn", exact: true }).click();
   await expect(page.locator("#nfcOverview")).toContainText("documentStatus");
   await expect(page.locator("#chainOverview")).toContainText("still run in a local simulator");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
