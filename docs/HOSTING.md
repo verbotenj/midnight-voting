@@ -8,12 +8,17 @@ Pages is not used. `render.yaml` selects the Free web-service plan explicitly.
 - Health check: `/health`
 - Node: 24.16.0; `HOST=0.0.0.0` on Render; Render supplies `PORT` and `RENDER_EXTERNAL_URL`.
 - No environment secrets, wallet funding, Docker, Compact compiler, or database.
-- Automatic deploys wait for GitHub checks to pass.
+- Blueprint automatic deploys wait for GitHub checks to pass. A service imported
+  using **Public Git Repository** can instead use **Auto-Deploy: Off**; deploy
+  manually after local/GitHub checks pass, without granting GitHub account access.
 
 Create a Render Blueprint from this repository's `render.yaml`, or use a Free
 Node Web Service with the settings above. When deploying manually, set the public
 origin using Render's automatically supplied external URL. Do not enable paid
 resources. Account email verification and GitHub connection may require the owner.
+Render may also request payment-card verification even when Free is selected;
+the owner must complete that step if they choose to proceed. Never enter payment
+details or switch to a paid plan as part of automated deployment.
 
 ## Boundaries
 
