@@ -1,5 +1,23 @@
 import { test, expect } from "@playwright/test";
 
+test("an immediate start waits for the initial session cookie", async ({ page }) => {
+  let releaseState;
+  const stateGate = new Promise(resolve => { releaseState = resolve; });
+  let resetRequests = 0;
+  page.on("request", request => { if (request.url().endsWith("/api/demo/reset")) resetRequests++; });
+  await page.route("**/api/state", async route => { await stateGate; await route.continue(); });
+  try {
+    await page.goto("/");
+    await page.locator("#guidedDemoButton").click();
+    await expect(page.locator("#guidedDemoButton")).toBeHidden();
+    expect(resetRequests).toBe(0);
+    releaseState();
+    await expect(page.locator("#demoNext")).toBeEnabled();
+    expect(resetRequests).toBe(1);
+    await expect(page.locator("#demoStepTitle")).toContainText("1 / 10");
+  } finally { releaseState(); }
+});
+
 test("hosted walkthrough completes and leaves another visitor untouched", async ({ page, browser, baseURL }) => {
   const errors = [], liveRequests = [];
   page.on("pageerror", error => errors.push(error.message));

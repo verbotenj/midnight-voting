@@ -2,6 +2,13 @@
 
 ## Cloudflare Workers — preferred, no-card free plan
 
+Public demo: <https://midnight-voting.verbotenj.workers.dev>.
+The connected GitHub integration deploys `main`; non-production branch builds
+are disabled. The build token is restricted to this account's Workers Scripts
+Edit and Account Settings Read, plus user Memberships Read and User Details Read.
+Workers editing is account-scoped, not restricted to this one Worker. The token
+is managed by Cloudflare Builds and is not stored in this repository.
+
 The UI and API deploy together as a Worker with static assets. The public runtime
 imports only the fictional domain model, Node-compatible hashing, and Cloudflare
 storage APIs. There is no Midnight SDK, prover, wallet binding, or live-chain route.

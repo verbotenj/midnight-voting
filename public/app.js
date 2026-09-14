@@ -38,6 +38,7 @@ let selectedChoice = null;
 let busy = false;
 let publicState = null;
 let guidedRunning = false;
+let initialRefresh;
 const preparedCredentials = new Map();
 
 const nfc = Object.fromEntries(["nfcScene", "nfcSceneStatus", "nfcPassport", "nfcPassportLabel", "nfcReader", "nfcReaderStatus", "nfcCredentialTitle", "nfcCredentialDetail"].map(id => [id, document.getElementById(id)]));
@@ -261,6 +262,12 @@ async function makeProof(secret, choice) {
 }
 
 async function api(path, options = {}) {
+  // The first state response establishes the hosted session cookie. A fast
+  // click must not submit a mutation before that response has arrived.
+  if (HOSTED_DEMO && options.method && options.method !== "GET") {
+    if (!await initialRefresh) initialRefresh = refresh();
+    if (!await initialRefresh) return { ok: false, status: 0, code: "SERVICE_UNAVAILABLE" };
+  }
   const exchange = options.body ? inspectRequest(path, JSON.parse(options.body)) : null;
   try {
     const response = await fetch(path, {
@@ -687,4 +694,7 @@ ui.copyRoot.addEventListener("click", async () => {
 });
 ui.clearTrace.addEventListener("click", () => manualAction(() => resetProtocolTheater(true)));
 
-refresh().catch(() => toast("Cannot reach the demo server", "Start it with npm start, then refresh this page.", "error"));
+initialRefresh = refresh().catch(() => {
+  toast("Cannot reach the demo server", "Refresh this page to retry the connection.", "error");
+  return false;
+});

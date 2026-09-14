@@ -1,5 +1,7 @@
 # Midnight Voting
 
+[Open the public simulation](https://midnight-voting.verbotenj.workers.dev) — fictional passports only; no live blockchain submissions.
+
 A fictional passport-eligibility demo and proof-backed voting POC on **Midnight
 Preview**.
 
