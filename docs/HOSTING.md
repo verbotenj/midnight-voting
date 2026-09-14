@@ -8,7 +8,7 @@ storage APIs. There is no Midnight SDK, prover, wallet binding, or live-chain ro
 
 ```sh
 npm ci --ignore-scripts
-npm run check
+npm run check:cloudflare
 npm run build:cloudflare
 npm run test:cloudflare
 ```
@@ -20,7 +20,7 @@ environment variables. Never upload `.env*`, `.local`, `.dev.vars`, or wallet fi
 
 In the Cloudflare dashboard, create a Worker from GitHub, grant repository access
 only to `verbotenj/midnight-voting`, and select `main`. Worker name: `midnight-voting`.
-Use `npm run build:cloudflare` as the build command and `npm run deploy:cloudflare`
+Use `npm run check:cloudflare && npm run build:cloudflare` as the build command and `npm run deploy:cloudflare`
 as the deploy command. Keep the Workers Free plan; no paid add-ons or domain purchase
 is needed. `wrangler.jsonc` defines the assets and SQLite Durable Object migration.
 
@@ -29,6 +29,10 @@ itself wait for the separate GitHub Actions workflow. For CI-gated deployments,
 run the required checks in the Cloudflare build command or configure a GitHub
 Actions deploy job after validation, using an owner-approved scoped Cloudflare
 token stored as a GitHub secret. Do not claim CI gating until it is configured.
+The Cloudflare build runs simulation tests only. The full `npm run check` includes
+Preview inspection tests that require generated Compact artifacts; GitHub CI
+compiles those artifacts before running the full suite. Never substitute the full
+test command into a clean hosting build without its compiler setup steps.
 
 One bounded Durable Object coordinates up to 250 independent browser sessions.
 SQLite transactions serialize issuance/nullifier checks and mutations; state

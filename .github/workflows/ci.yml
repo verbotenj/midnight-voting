@@ -26,6 +26,7 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run repo:check
+      - run: npm run check:cloudflare
       - run: npm run contract:setup
       - run: npm run contract:compile
       - run: npm run contract:verify
