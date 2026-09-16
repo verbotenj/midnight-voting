@@ -1,5 +1,15 @@
 import { test, expect } from "@playwright/test";
 
+test("expired sessions explain recovery without claiming the server is offline", async ({ page }) => {
+  await page.route("**/api/demo/reset", route => route.fulfill({ status: 409, contentType: "application/json", body: JSON.stringify({ code: "DEMO_SESSION_EXPIRED" }) }));
+  await page.goto("/");
+  await page.locator("#guidedDemoButton").click();
+  await expect(page.locator("#flowStatus")).toHaveText("DEMO SESSION EXPIRED");
+  await expect(page.locator("#demoStepDetail")).toContainText("Refresh the page to create a new demo session");
+  await expect(page.locator("#demoResults li")).toHaveCount(0);
+  await expect(page.locator("#demoNext")).toBeHidden();
+});
+
 test("an immediate start waits for the initial session cookie", async ({ page }) => {
   let releaseState;
   const stateGate = new Promise(resolve => { releaseState = resolve; });

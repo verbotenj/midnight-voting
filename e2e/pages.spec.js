@@ -4,7 +4,7 @@ test("focused demo and separate pages load directly without mutations", async ({
   const writes = [], errors = [];
   page.on("request", request => { if (request.method() === "POST") writes.push(request.url()); });
   page.on("pageerror", error => errors.push(error.message));
-  for (const [path, name] of [["/", "demo"], ["/learn", "learn"], ["/developer", "developer"], ["/preview", "preview"]]) {
+  for (const [path, name] of [["/", "demo"], ["/learn", "learn"], ["/privacy", "privacy"], ["/developer", "developer"], ["/preview", "preview"]]) {
     await page.goto(path);
     await expect(page.locator("body")).toHaveAttribute("data-page", name);
     await expect(page.locator(".page-view:visible")).toHaveCount(1);

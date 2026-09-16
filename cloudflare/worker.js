@@ -8,8 +8,8 @@ const securityHeaders = {
   "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=()",
   "content-security-policy": "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
 };
-const assets = new Set(["/index.html", "/app.js", "/pages.js", "/demo-player.js", "/payload-inspector.js", "/hosted-demo.js", "/preview-ballot.js", "/wallet-lab.js", "/styles.css"]);
-const pages = new Set(["/", "/learn", "/developer", "/preview"]);
+const assets = new Set(["/index.html", "/app.js", "/pages.js", "/privacy-lens.js", "/demo-player.js", "/payload-inspector.js", "/hosted-demo.js", "/preview-ballot.js", "/wallet-lab.js", "/styles.css"]);
+const pages = new Set(["/", "/learn", "/privacy", "/developer", "/preview"]);
 const passports = new Set(PASSPORT_FIXTURES.map(record => record.passport));
 const json = (status, body, extra = {}) => new Response(JSON.stringify(body), { status, headers: { ...securityHeaders, "content-type": "application/json; charset=utf-8", ...extra } });
 

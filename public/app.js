@@ -1,11 +1,13 @@
 import { HOSTED_DEMO } from "./runtime.js";
 import { initializeHostedDemo } from "./hosted-demo.js";
 import { initializePages, navigatePage } from "./pages.js";
+import { initializePrivacyLens } from "./privacy-lens.js";
 import { initializeNetworkLab } from "./wallet-lab.js";
 import { initializePreviewBallot } from "./preview-ballot.js";
 import { DemoPlayer, DemoStopped } from "./demo-player.js";
 import { inspectRequest, inspectLocal, inspectPublic, resetInspector, initializeInspector, highlightBoundary } from "./payload-inspector.js";
 initializePages();
+initializePrivacyLens();
 initializeInspector();
 if (HOSTED_DEMO) initializeHostedDemo();
 else { initializeNetworkLab(); initializePreviewBallot(); }
@@ -592,9 +594,15 @@ async function guidedDemo() {
   try {
     const reset = await api("/api/demo/reset", { method: "POST", body: "{}" });
     if (!reset.ok) {
-      setFlowStatus("DEMO SERVER OFFLINE", "rejected");
-      toast("Demo server is offline", "Start it with npm start, then press the demo button again.", "error");
-      throw new Error("Demo reset was not confirmed. No scripted steps were run.");
+      const expired = reset.code === "DEMO_SESSION_EXPIRED";
+      const limited = reset.status === 429;
+      const title = expired ? "Demo session expired" : limited ? "Demo is busy" : "Cannot confirm demo reset";
+      const detail = expired ? "Refresh the page to create a new demo session. No scripted steps were run."
+        : limited ? "Wait a minute before trying again. No scripted steps were run."
+        : "The server did not confirm the reset. Check your connection and retry when available. No scripted steps were run.";
+      setFlowStatus(title.toUpperCase(), "rejected");
+      toast(title, detail, "error");
+      throw new Error(detail);
     }
     localStorage.removeItem(STORAGE_KEY);
     preparedCredentials.clear();

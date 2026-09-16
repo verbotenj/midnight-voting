@@ -3,6 +3,7 @@
 const routes = {
   "/": ["demo", "A ballot, one step at a time.", "Three fictional passports. Two eligible voters. You control every step."],
   "/learn": ["learn", "Understand the system.", "Passport reading, eligibility and zero-knowledge proofs—separate from the animation."],
+  "/privacy": ["privacy", "Who can see what?", "Explore the privacy boundary—and the limits. No wallet or passport needed."],
   "/developer": ["developer", "Inspect the boundaries.", "Manual simulator controls, request shapes and public state. No real chain transactions here."],
   "/preview": ["preview", "Check the real chain.", "Recorded elections and explicitly approved test-network operations. Separate from the demo."],
 };
@@ -67,6 +68,13 @@ export function initializePages() {
   more.className = "demo-learn-link";
   more.textContent = "Want the explanation? Visit Learn →";
   views.demo.append(more);
+  const lensLink = document.createElement("a");
+  lensLink.href = "/privacy";
+  lensLink.dataset.pageLink = "";
+  lensLink.className = "demo-learn-link";
+  lensLink.textContent = "New · try the Privacy lens →";
+  views.demo.append(lensLink);
+  views.privacy.append(document.getElementById("privacyLens"));
   for (const id of ["nfcOverview", "chainOverview", "zkExplainer"]) views.learn.append(document.getElementById(id));
   views.developer.append(document.getElementById("developerElection"));
   for (const selector of [".workspace", ".payload-follow", ".payload-boundaries", "#payloadInspector", ".protocol-ticker", ".ledger-section"]) {

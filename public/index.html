@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b1615" />
-    <meta name="description" content="Private passport-based voting proof of concept for Midnight" />
+    <meta name="description" content="Explore a Midnight voting POC: fictional passports, one-time credentials and a privacy lens. Hosted simulation—not a production secret ballot." />
     <title>Private Ballot — Midnight POC</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
@@ -19,6 +19,7 @@
       <nav class="page-nav" aria-label="Main navigation">
         <a href="/" data-page-link>Demo</a>
         <a href="/learn" data-page-link>Learn</a>
+        <a href="/privacy" data-page-link>Privacy lens</a>
         <a href="/developer" data-page-link>Developer</a>
         <a href="/preview" data-page-link>Live Preview</a>
       </nav>
@@ -26,6 +27,21 @@
     </header>
 
     <main id="top">
+      <section class="privacy-lens" id="privacyLens" aria-label="Privacy lens">
+        <div class="lens-intro"><span class="panel-kicker">ONE BALLOT · THREE PERSPECTIVES</span><p>Switch seats. See where the information goes.</p><small>Illustrative fields from the real Compact design. Not a live transaction, passport read or proof.</small></div>
+        <div class="lens-controls" role="group" aria-label="Choose a perspective">
+          <button type="button" data-privacy-view="voter" aria-pressed="false" aria-controls="privacyPerspective"><span aria-hidden="true">01</span>Voter device</button>
+          <button type="button" data-privacy-view="authority" aria-pressed="false" aria-controls="privacyPerspective"><span aria-hidden="true">02</span>Passport authority</button>
+          <button type="button" data-privacy-view="public" aria-pressed="true" aria-controls="privacyPerspective"><span aria-hidden="true">03</span>Public chain</button>
+        </div>
+        <p id="privacyAnnouncement" class="visually-hidden" role="status" aria-live="polite"></p>
+        <div class="lens-perspective" id="privacyPerspective">
+          <div class="lens-story"><span class="panel-kicker" data-lens="kicker"></span><h2 data-lens="title"></h2><p data-lens="description"></p><a href="https://github.com/verbotenj/midnight-voting/blob/main/compact/Voting.compact">Read the Compact contract ↗</a></div>
+          <dl class="lens-fields" id="privacyFields" aria-label="Selected information visible to this perspective"></dl>
+        </div>
+        <aside class="lens-limit"><strong data-lens="boundary"></strong><p data-lens="caveat"></p></aside>
+        <details class="lens-simulator"><summary>And what does this hosted simulation actually send?</summary><p>This website does not generate a ZK proof. Its vote request sends a <strong>synthetic credential secret</strong> to the simulator backend. Hiding that value in the inspector is not encryption or zero knowledge. The same backend runs the mock authority and vote verifier, so it can link fictional identities and choices.</p><p>The real Compact path uses private witnesses and a trusted local prover; that is separate from this website. No real passport data belongs in either demo.</p><a href="/developer" data-page-link>Inspect the simulator’s request shapes →</a></details>
+      </section>
       <div class="hero-side" id="developerElection">
         <div class="election-label">SIMULATED ELECTION</div>
         <div class="election-id">ELECTION-DEMO-2026-001</div>

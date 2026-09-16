@@ -22,5 +22,5 @@ export function initializeHostedDemo() {
   link.textContent = "View contract addresses and transaction receipts on GitHub →";
   info.append(heading, text, link);
   preview.append(info);
-  document.querySelector(".demo-disclaimer").textContent = "Simulation only · no real passports, hardware NFC, ZK proofs or blockchain submissions here. Copied-app denial is modeled within your session, not enforced across independent public visitors.";
+  document.querySelector(".demo-disclaimer").textContent = "Simulation only · no hardware NFC, ZK proofs or blockchain submissions. The backend can link fictional identities and votes. One-issuance rules apply within your browser’s demo session, not across independent visitors.";
 }

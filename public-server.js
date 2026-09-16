@@ -8,8 +8,8 @@ import { resolve } from "node:path";
 import { createDemoState, authorityState, publicElectionState, issueCredential, castVote, closeElection, ELECTION_ID, PASSPORT_FIXTURES } from "./lib/domain.js";
 
 const files = new Map([
-  ...["/", "/learn", "/developer", "/preview"].map(route => [route, ["index.html", "text/html"]]),
-  ...["app.js", "pages.js", "demo-player.js", "payload-inspector.js", "hosted-demo.js", "preview-ballot.js", "wallet-lab.js"].map(name => [`/${name}`, [name, "text/javascript"]]),
+  ...["/", "/learn", "/privacy", "/developer", "/preview"].map(route => [route, ["index.html", "text/html"]]),
+  ...["app.js", "pages.js", "privacy-lens.js", "demo-player.js", "payload-inspector.js", "hosted-demo.js", "preview-ballot.js", "wallet-lab.js"].map(name => [`/${name}`, [name, "text/javascript"]]),
   ["/styles.css", ["styles.css", "text/css"]],
 ]);
 const passports = new Set(PASSPORT_FIXTURES.map(item => item.passport));

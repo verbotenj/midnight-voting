@@ -34,7 +34,7 @@
     "start": "node server.js",
     "start:public": "node public-server.js",
     "dev:cloudflare": "node scripts/cloudflare.js dev --ip 127.0.0.1 --port 4176",
-    "check:cloudflare": "node --check cloudflare/worker.js && node --check public/app.js && node --test tests/domain.test.js test/cloudflare-store.test.js test/public-server.test.js test/payload-inspector.test.js",
+    "check:cloudflare": "node --check cloudflare/worker.js && node --check public/app.js && node --test tests/domain.test.js test/cloudflare-store.test.js test/public-server.test.js test/payload-inspector.test.js test/privacy-lens.test.js",
     "build:cloudflare": "node scripts/cloudflare.js deploy --dry-run --outdir .local/cloudflare-build",
     "deploy:cloudflare": "node scripts/cloudflare.js deploy",
     "test:cloudflare": "playwright test --config playwright.cloudflare.config.js",

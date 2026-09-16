@@ -40,7 +40,7 @@ test("public hosting blocks live APIs, private files, unexpected bodies and cros
   for (const path of ["/api/preview/actions", "/api/preview/inspection", "/api/midnight/network"]) assert.equal((await get(path)).status, 403);
   for (const path of ["/.env.development", "/.local/preview-voting/authority.json", "/server.js", "/lib/preview-wallet.js", "/node_modules/package.json"]) assert.equal((await get(path)).status, 404);
   assert.match(await (await get("/runtime.js")).text(), /HOSTED_DEMO = true/);
-  for (const path of ["/", "/learn", "/developer", "/preview", "/health"]) assert.equal((await get(path)).status, 200);
+  for (const path of ["/", "/learn", "/privacy", "/privacy-lens.js", "/developer", "/preview", "/health"]) assert.equal((await get(path)).status, 200);
   assert.equal((await post("/api/demo/reset", {}, cookie, { origin: "https://attacker.example" })).status, 403);
   assert.equal((await post("/api/demo/reset", {}, cookie, { origin: "" })).status, 403);
   assert.equal((await post("/api/demo/reset", { seed: "not-allowed" }, cookie)).status, 400);

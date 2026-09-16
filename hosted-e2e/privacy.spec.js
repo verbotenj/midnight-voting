@@ -1,0 +1,43 @@
+import { test, expect } from "@playwright/test";
+
+test("privacy lens separates perspectives without mutations or network requests", async ({ page }) => {
+  const writes = [], errors = [];
+  page.on("request", request => { if (request.method() === "POST") writes.push(request.url()); });
+  page.on("pageerror", error => errors.push(error.message));
+  await page.goto("/privacy");
+  await expect(page.getByRole("heading", { name: "Who can see what?" })).toBeVisible();
+  await expect(page.locator(".page-nav [aria-current=page]")).toHaveText("Privacy lens");
+  await expect(page.locator("#resetButton")).toBeHidden();
+  const lens = page.locator("#privacyLens"), fields = page.locator("#privacyFields");
+  await expect(fields).not.toContainText("DEMO-P001");
+  await expect(fields).toContainText("YES · public");
+  await expect(lens).toContainText("No passport field on-chain ≠ end-to-end anonymity.");
+  const requests = [];
+  const collect = request => requests.push(request.url());
+  // Allow the normal page bootstrap read to finish before observing lens clicks.
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("private-ballot-hosted-version"))).toBeTruthy();
+  page.on("request", collect);
+  await page.getByRole("button", { name: "Voter device" }).click();
+  await expect(fields).toContainText("DEMO-P001");
+  await expect(fields).toContainText("<private witness>");
+  await page.getByRole("button", { name: "Passport authority" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(fields).toContainText("VALID · ELIGIBLE · ISSUED");
+  await expect(fields).not.toContainText("Ballot choice");
+  await expect(lens.locator('[aria-pressed="true"]')).toHaveCount(1);
+  await page.getByRole("button", { name: "Public chain" }).click();
+  await page.getByText("And what does this hosted simulation actually send?", { exact: true }).click();
+  await expect(lens).toContainText("it can link fictional identities and choices");
+  expect(requests).toEqual([]);
+  page.off("request", collect);
+  expect(writes).toEqual([]);
+  expect(errors).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.reload();
+  await expect(fields).toContainText("YES · public");
+  await page.getByRole("link", { name: "Demo", exact: true }).click();
+  await page.getByRole("link", { name: "New · try the Privacy lens →" }).click();
+  await expect(page).toHaveURL(/\/privacy$/);
+  await page.goBack();
+  await expect(page.locator("body")).toHaveAttribute("data-page", "demo");
+});

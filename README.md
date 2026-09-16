@@ -2,6 +2,11 @@
 
 [Open the public simulation](https://midnight-voting.verbotenj.workers.dev) — fictional passports only; no live blockchain submissions.
 
+New: [Privacy lens](https://midnight-voting.verbotenj.workers.dev/privacy). Switch
+between voter, authority and public-chain perspectives to see selected disclosed
+and private fields. It is a read-only illustration, not a live data feed. Public
+choices, prover trust and the hosted simulator's non-ZK boundary remain explicit.
+
 A fictional passport-eligibility demo and proof-backed voting POC on **Midnight
 Preview**.
 
